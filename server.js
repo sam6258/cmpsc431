@@ -7,7 +7,7 @@ var router = express.Router();
 var connection = mysql.createConnection({
   host     : 'sql9.freemysqlhosting.net',
   user     : 'sql9161597',
-  password : 'YPk6CC3RBb',
+  password : process.env.PASS,
   database : 'sql9161597'
 });
 connection.connect(function(err){
