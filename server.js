@@ -62,6 +62,5 @@ router.get('/Users/:uid/:pass', function(req, res) {
       else
        res.json({ error: err });
       });
-    connection.end();
 
 });
