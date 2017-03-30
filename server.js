@@ -27,13 +27,11 @@ connection.connect(function(err){
               next();
             }
         };
-
-
             // enable CORS!
             app.use(enableCORS);        
             app.use(bodyParser.urlencoded({ extended: true }));
             app.use(bodyParser.json());         
-            app.use('/api', router); 
+            app.use('/app', router); 
         });        
     } else {
         console.log("Error connecting database");    
@@ -43,5 +41,27 @@ connection.connect(function(err){
 router.get('/', function(req, res) {
     res.json({ message: 'WebApp api' });   
 });
-app.use('/api', router);
+//router.get('/Users/:uid', function(req, res) {
+//    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '"'; 
+//    connection.query(query, function(err, rows, fields) {
+//      if (!err)
+//        res.json(rows);
+//      else
+//       res.json({ error: err });
+//      });
+//    connection.end();
+//
+//});
+router.get('/Users/:uid/:pass', function(req, res) {
+    //CHANGE USERNAME AND PASSWORD TO REQ.BODY.USER AND REQ.BODY.PASS FROM A FORM ON CLIENT, IT IS ONLY THROUGH URI RIGHT NOW FOR TESTING PURPOSES
+    
+    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '" AND PASSWORD="' + req.params.pass + '"'; 
+    connection.query(query, function(err, rows, fields) {
+      if (!err)
+        res.json(rows);
+      else
+       res.json({ error: err });
+      });
+    connection.end();
 
+});
