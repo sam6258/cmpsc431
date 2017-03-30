@@ -19,6 +19,7 @@
   "homepage": "https://github.com/sam6258/cmpsc431#readme",
   "dependencies": {
     "body-parser": "^1.17.1",
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "mysql": "^2.13.0"
   }
 }
