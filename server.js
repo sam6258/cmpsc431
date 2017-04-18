@@ -51,7 +51,7 @@ router.post('/Users', function(req, res) {
                   if (!err1){
                       if (rows1.length > 0){
                           rows[0]["vendor"] = true; 
-                          res.json(rows); 
+                          res.json(rows[0]); 
                       }
                       else{
                           rows[0]["vendor"] = false; 
