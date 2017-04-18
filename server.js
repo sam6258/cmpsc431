@@ -133,6 +133,20 @@ router.post('/Items', function(req, res){
             res.json({error: "error with items table query"}); 
     });
 });
+router.get('/Items', function(req, res){
+    var query = "SELECT * FROM Items"; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            var i = 0;
+            var itemArr = []; 
+            for (i=0; i < rows.length; i++)
+                itemArr.push(rows[i].itemID);
+            res.json(itemArr); 
+        }
+        else
+            res.json({error: "error with selecting * from items table"});
+    }); 
+}); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     connection.query(query, req.body, function(err, res1){
