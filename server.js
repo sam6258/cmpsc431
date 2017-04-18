@@ -58,11 +58,11 @@ router.post('/Users', function(req, res) {
                   }
               }
               else
-                  res.json({ error: err1 });
+                  res.json({ error: "error with vendor table" });
           });
       }
       else
-          res.json({ error: err });
+          res.json({ error: "error with users table" });
       });
 
 });
@@ -78,7 +78,7 @@ router.post('/Categories', function(req, res){
             res.json(itemArr);
         }
         else
-            res.json({error: err});
+            res.json({error: "error with table query"});
     });
 });
 router.post('/Items', function(req, res){
@@ -90,12 +90,29 @@ router.post('/Items', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]
     }
-    console.log(itemIDs);
     var query = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')';
     connection.query(query, function(err, rows, fields){
         if (!err)
             res.json(rows); 
         else
-            res.json({error: err}); 
+            res.json({error: "error with items table query"}); 
     });
+});
+router.post('/Item', function(req, res){
+    var query = "INSERT INTO Items SET ?"; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            var query1 = 'SELECT * FROM Items WHERE itemID = ' + res1.insertId; 
+            connection.query(query1, function(err1, rows, fields){
+                if (!err)
+                    res.json(rows); 
+                else
+                    res.json({error: "error with items table"}); 
+            }); 
+        }
+        else{
+            throw err;
+            res.json({error: "error with items table insertion"}); 
+        }
+    }); 
 }); 
