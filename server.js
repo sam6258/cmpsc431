@@ -7,7 +7,7 @@ var router = express.Router();
 var connection = mysql.createConnection({
   host     : 'sql9.freemysqlhosting.net',
   user     : 'sql9161597',
-  password : process.env.PASS,
+  password : 'YPk6CC3RBb' || process.env.PASS,
   database : 'sql9161597'
 });
 connection.connect(function(err){
@@ -41,26 +41,28 @@ connection.connect(function(err){
 router.get('/', function(req, res) {
     res.json({ message: 'WebApp api' });   
 });
-//router.get('/Users/:uid', function(req, res) {
-//    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '"'; 
-//    connection.query(query, function(err, rows, fields) {
-//      if (!err)
-//        res.json(rows);
-//      else
-//       res.json({ error: err });
-//      });
-//    connection.end();
-//
-//});
-router.get('/Users/:uid/:pass', function(req, res) {
-    //CHANGE USERNAME AND PASSWORD TO REQ.BODY.USER AND REQ.BODY.PASS FROM A FORM ON CLIENT, IT IS ONLY THROUGH URI RIGHT NOW FOR TESTING PURPOSES
-    
-    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '" AND PASSWORD="' + req.params.pass + '"'; 
+router.post('/Users', function(req, res) {
+    query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
     connection.query(query, function(err, rows, fields) {
-      if (!err)
-        res.json(rows);
+      if (!err){
+          query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
+          connection.query(query1, function(err1, rows1, fields1){
+              if (!err1){
+                  if (rows1.length > 0){
+                      rows[0]["vendor"] = true; 
+                      res.json(rows); 
+                  }
+                  else{
+                      rows[0]["vendor"] = false; 
+                      res.json(rows[0]); 
+                  }
+              }
+              else
+                  res.json({ error: err1 });
+          });
+      }
       else
-       res.json({ error: err });
+          res.json({ error: err });
       });
 
 });
