@@ -42,7 +42,6 @@ router.get('/', function(req, res) {
     res.json({ message: 'WebApp api' });   
 });
 router.post('/Users', function(req, res) {
-    
     query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
     connection.query(query, function(err, rows, fields) {
       if (!err){
@@ -60,7 +59,6 @@ router.post('/Users', function(req, res) {
               }
               else
                   res.json({ error: err1 });
-              
           });
       }
       else
