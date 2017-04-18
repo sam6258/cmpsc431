@@ -42,10 +42,10 @@ router.get('/', function(req, res) {
     res.json({ message: 'WebApp api' });   
 });
 router.post('/Users', function(req, res) {
-    query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
+    var query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
     connection.query(query, function(err, rows, fields) {
       if (!err){
-          query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
+          var query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
           connection.query(query1, function(err1, rows1, fields1){
               if (!err1){
                   if (rows1.length > 0){
@@ -66,3 +66,36 @@ router.post('/Users', function(req, res) {
       });
 
 });
+router.post('/Categories', function(req, res){
+    var query = 'SELECT * FROM CategoryAssociation WHERE cid="' + req.body.cid + '"';
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            var itemArr = [];
+            var i = 0; 
+            for (i = 0; i < rows.length; i++){
+                itemArr.push(rows[i].itemID);
+            }
+            res.json(itemArr);
+        }
+        else
+            res.json({error: err});
+    });
+});
+router.post('/Items', function(req, res){
+    var i = 0;
+    var itemIDs = "";
+    for (i = 0; i < req.body.itemIDs.length; i++){
+        if ( i < req.body.itemIDs.length - 1)
+            itemIDs = itemIDs + req.body.itemIDs[i] + ',';
+        else
+            itemIDs = itemIDs + req.body.itemIDs[i]
+    }
+    console.log(itemIDs);
+    var query = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')';
+    connection.query(query, function(err, rows, fields){
+        if (!err)
+            res.json(rows); 
+        else
+            res.json({error: err}); 
+    });
+}); 
