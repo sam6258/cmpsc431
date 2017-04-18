@@ -7,7 +7,7 @@ var router = express.Router();
 var connection = mysql.createConnection({
   host     : 'sql9.freemysqlhosting.net',
   user     : 'sql9161597',
-  password : process.env.PASS,
+  password : 'YPk6CC3RBb' || process.env.PASS,
   database : 'sql9161597'
 });
 connection.connect(function(err){
@@ -41,26 +41,127 @@ connection.connect(function(err){
 router.get('/', function(req, res) {
     res.json({ message: 'WebApp api' });   
 });
-//router.get('/Users/:uid', function(req, res) {
-//    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '"'; 
-//    connection.query(query, function(err, rows, fields) {
-//      if (!err)
-//        res.json(rows);
-//      else
-//       res.json({ error: err });
-//      });
-//    connection.end();
-//
-//});
-router.get('/Users/:uid/:pass', function(req, res) {
-    //CHANGE USERNAME AND PASSWORD TO REQ.BODY.USER AND REQ.BODY.PASS FROM A FORM ON CLIENT, IT IS ONLY THROUGH URI RIGHT NOW FOR TESTING PURPOSES
-    
-    query = 'SELECT * FROM Users WHERE UID="' + req.params.uid + '" AND PASSWORD="' + req.params.pass + '"'; 
+router.post('/Users', function(req, res) {
+    var query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
     connection.query(query, function(err, rows, fields) {
-      if (!err)
-        res.json(rows);
+      if (!err){
+          if (rows.length > 0){
+              var query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
+              connection.query(query1, function(err1, rows1, fields1){
+                  if (!err1){
+                      if (rows1.length > 0){
+                          rows[0]["vendor"] = true; 
+                          res.json(rows[0]); 
+                      }
+                      else{
+                          rows[0]["vendor"] = false; 
+                          res.json(rows[0]); 
+                      }
+                  }
+                  else
+                      res.json({ error: "error with vendor table" });
+              });              
+          }
+          else
+              res.json({error: "incorrect login"});
+      }
       else
-       res.json({ error: err });
+          res.json({ error: "error with users table" });
       });
 
 });
+router.post('/User', function(req, res){
+    var query = 'SELECT * FROM Users WHERE UID = "' + req.body.UID + '"'; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            if (rows.length > 0)
+                res.json({error: "user already exists"});             
+            else{
+                var query1 = "INSERT INTO Users SET ?"; 
+                connection.query(query1, req.body, function(err1, res1){
+                    if (!err1){
+                        var query2 = 'SELECT * FROM Users WHERE UID = "' + req.body.UID + '"'; 
+                        connection.query(query2, function(err2, rows1, fields1){
+                            if (!err2)
+                                res.json(rows1[0]); 
+                            else
+                                res.json({error: "error with users table"}); 
+                        }); 
+                    }
+                    else{
+                        res.json({error: "error with users table insertion"}); 
+                    }
+                });                 
+            }
+        }
+        else
+            res.json({error: "error with select statement on users table"}); 
+    
+    
+    
+    }); 
+});  
+router.post('/Categories', function(req, res){
+    var query = 'SELECT * FROM CategoryAssociation WHERE cid="' + req.body.cid + '"';
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            var itemArr = [];
+            var i = 0; 
+            for (i = 0; i < rows.length; i++){
+                itemArr.push(rows[i].itemID);
+            }
+            res.json(itemArr);
+        }
+        else
+            res.json({error: "error with table query"});
+    });
+});
+router.post('/Items', function(req, res){
+    var i = 0;
+    var itemIDs = "";
+    for (i = 0; i < req.body.itemIDs.length; i++){
+        if ( i < req.body.itemIDs.length - 1)
+            itemIDs = itemIDs + req.body.itemIDs[i] + ',';
+        else
+            itemIDs = itemIDs + req.body.itemIDs[i]
+    }
+    var query = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')';
+    connection.query(query, function(err, rows, fields){
+        if (!err)
+            res.json(rows); 
+        else
+            res.json({error: "error with items table query"}); 
+    });
+});
+router.get('/Items', function(req, res){
+    var query = "SELECT * FROM Items"; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            var i = 0;
+            var itemArr = []; 
+            for (i=0; i < rows.length; i++)
+                itemArr.push(rows[i].itemID);
+            res.json(itemArr); 
+        }
+        else
+            res.json({error: "error with selecting * from items table"});
+    }); 
+}); 
+router.post('/Item', function(req, res){
+    var query = "INSERT INTO Items SET ?"; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            var query1 = 'SELECT * FROM Items WHERE itemID = ' + res1.insertId; 
+            connection.query(query1, function(err1, rows, fields){
+                if (!err)
+                    res.json(rows[0]); 
+                else
+                    res.json({error: "error with items table"}); 
+            }); 
+        }
+        else{
+            throw err;
+            res.json({error: "error with items table insertion"}); 
+        }
+    }); 
+}); 
