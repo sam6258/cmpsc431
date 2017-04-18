@@ -53,8 +53,12 @@ router.post('/Users', function(req, res) {
                       res.json(rows); 
                   }
                   else{
-                      rows[0]["vendor"] = false; 
-                      res.json(rows[0]); 
+                      if(rows.length > 0){
+                          rows[0]["vendor"] = false; 
+                          res.json(rows[0]); 
+                      }
+                      else
+                          res.json({ error: "incorrect login" });
                   }
               }
               else
