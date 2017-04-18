@@ -70,6 +70,37 @@ router.post('/Users', function(req, res) {
       });
 
 });
+router.post('/User', function(req, res){
+    var query = 'SELECT * FROM Users WHERE UID = "' + req.body.UID + '"'; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            if (rows.length > 0)
+                res.json({error: "user already exists"});             
+            else{
+                var query1 = "INSERT INTO Users SET ?"; 
+                connection.query(query1, req.body, function(err1, res1){
+                    if (!err1){
+                        var query2 = 'SELECT * FROM Users WHERE UID = "' + req.body.UID + '"'; 
+                        connection.query(query2, function(err2, rows1, fields1){
+                            if (!err2)
+                                res.json(rows1[0]); 
+                            else
+                                res.json({error: "error with users table"}); 
+                        }); 
+                    }
+                    else{
+                        res.json({error: "error with users table insertion"}); 
+                    }
+                });                 
+            }
+        }
+        else
+            res.json({error: "error with select statement on users table"}); 
+    
+    
+    
+    }); 
+});  
 router.post('/Categories', function(req, res){
     var query = 'SELECT * FROM CategoryAssociation WHERE cid="' + req.body.cid + '"';
     connection.query(query, function(err, rows, fields){
@@ -109,7 +140,7 @@ router.post('/Item', function(req, res){
             var query1 = 'SELECT * FROM Items WHERE itemID = ' + res1.insertId; 
             connection.query(query1, function(err1, rows, fields){
                 if (!err)
-                    res.json(rows); 
+                    res.json(rows[0]); 
                 else
                     res.json({error: "error with items table"}); 
             }); 
