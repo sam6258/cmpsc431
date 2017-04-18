@@ -45,25 +45,25 @@ router.post('/Users', function(req, res) {
     var query = 'SELECT * FROM Users WHERE UID="' + req.body.uid + '" AND PASSWORD="' + req.body.password + '"'; 
     connection.query(query, function(err, rows, fields) {
       if (!err){
-          var query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
-          connection.query(query1, function(err1, rows1, fields1){
-              if (!err1){
-                  if (rows1.length > 0){
-                      rows[0]["vendor"] = true; 
-                      res.json(rows); 
-                  }
-                  else{
-                      if(rows.length > 0){
+          if (rows.length > 0){
+              var query1 = 'SELECT * FROM Vendors WHERE vendorID="' + req.body.uid + '"';
+              connection.query(query1, function(err1, rows1, fields1){
+                  if (!err1){
+                      if (rows1.length > 0){
+                          rows[0]["vendor"] = true; 
+                          res.json(rows); 
+                      }
+                      else{
                           rows[0]["vendor"] = false; 
                           res.json(rows[0]); 
                       }
-                      else
-                          res.json({ error: "incorrect login" });
                   }
-              }
-              else
-                  res.json({ error: "error with vendor table" });
-          });
+                  else
+                      res.json({ error: "error with vendor table" });
+              });              
+          }
+          else
+              res.json({error: "incorrect login"});
       }
       else
           res.json({ error: "error with users table" });
