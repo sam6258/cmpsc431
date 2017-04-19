@@ -125,10 +125,17 @@ router.post('/Items', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]
     }
-    var query = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')';
+    var query = 'SELECT * FROM AuctionItems A, Items I WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ')';
     connection.query(query, function(err, rows, fields){
-        if (!err)
-            res.json(rows); 
+        if (!err){
+            var query1 = 'SELECT * FROM SaleItems S, Items I WHERE S.itemID = I.itemID AND I.itemID IN (' + itemIDs + ')';  
+            connection.query(query1, function(err1, rows1, fields1){
+                if (!err1){
+                    resultObj = {auctionedItems: rows, saleItems: rows1}; 
+                    res.json(resultObj); 
+                }
+            }); 
+        }
         else
             res.json({error: "error with items table query"}); 
     });
