@@ -168,7 +168,7 @@ router.get('/Items', function(req, res){
 }); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
-    var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url};
+    var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
     connection.query(query, itemData, function(err, res1){
         insertID = res1.insertId;
         if (!err){
