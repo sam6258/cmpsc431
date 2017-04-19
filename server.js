@@ -77,13 +77,29 @@ router.post('/User', function(req, res){
             if (rows.length > 0)
                 res.json({error: "user already exists"});             
             else{
+                var bData = req.body; 
+                var userData = {UID: bData.UID, name: bData.name, address: bData.address, email: bData.email, phone: bData.phone, age: bData.age, income: bData.income, password: bData.password}; 
                 var query1 = "INSERT INTO Users SET ?"; 
-                connection.query(query1, req.body, function(err1, res1){
+                connection.query(query1, userData, function(err1, res1){
                     if (!err1){
                         var query2 = 'SELECT * FROM Users WHERE UID = "' + req.body.UID + '"'; 
                         connection.query(query2, function(err2, rows1, fields1){
-                            if (!err2)
-                                res.json(rows1[0]); 
+                            if (!err2){
+                                returnObj = rows1[0]; 
+                                returnObj["vendor"] = bData.vendor; 
+                                if (bData.vendor){
+                                    var vendor = {vendorID: bData.UID}; 
+                                    var query3 = 'INSERT INTO Vendors SET ?'; 
+                                    connection.query(query3, vendor, function(err3, res2){
+                                        if (!err3)
+                                            res.json(returnObj); 
+                                        else
+                                            res.json({error: "error with insertion Vendors table"});
+                                    }); 
+                                }
+                                else
+                                    res.json(returnObj);
+                            } 
                             else
                                 res.json({error: "error with users table"}); 
                         }); 
