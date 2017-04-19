@@ -134,27 +134,62 @@ router.post('/Items', function(req, res){
     });
 });
 router.get('/Items', function(req, res){
-    var query = "SELECT * FROM Items"; 
+    var query = "SELECT * FROM AuctionItems"; 
     connection.query(query, function(err, rows, fields){
         if (!err){
             var i = 0;
-            var itemArr = []; 
+            var auctionItems = [];
+            var saleItems = [];
             for (i=0; i < rows.length; i++)
-                itemArr.push(rows[i].itemID);
-            res.json(itemArr); 
+                auctionItems.push(rows[i].itemID);
+            var query1 = "SELECT * FROM SaleItems";
+            connection.query(query1, function(err1, rows1, fields){
+                if (!err1){
+                    var i = 0; 
+                    for(i=0; i < rows1.length; i++)
+                        saleItems.push(rows1[i].itemID); 
+                    result = {"auctionItems": auctionItems, "saleItems": saleItems};
+                    res.json(result); 
+                }
+                else
+                    res.json({error: "error with selecting * from SaleItems"}); 
+            }); 
         }
         else
-            res.json({error: "error with selecting * from items table"});
+            res.json({error: "error with selecting * from AuctionItems table"});
     }); 
 }); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
-    connection.query(query, req.body, function(err, res1){
+    var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url};
+    connection.query(query, itemData, function(err, res1){
         if (!err){
             var query1 = 'SELECT * FROM Items WHERE itemID = ' + res1.insertId; 
             connection.query(query1, function(err1, rows, fields){
-                if (!err)
-                    res.json(rows[0]); 
+                if (!err){
+                    var auctionedItem = {"itemID": res1.insertID, "endTime": req.body.endTime, "reservePrice": req.body.reservePrice};
+                    var query2 = 'INSERT INTO AuctionedItems SET ?';
+                    connection.query(query2, auctionedItem, function(err2, res2){
+                        if (!err2){
+                            var query3 = 'SELECT * FROM CategoriesHierarchy WHERE cid="' + req.body.cid + '"';
+                            connection.query(query3, function(err3, rows1, fields1){
+                                if (!err){
+                                    if (rows1[0].up1 != null){
+                                        
+                                    }
+                                }
+                            
+                            }); 
+                            
+                            res.json(rows[0]); 
+                            
+                        }
+                        else
+                            res.json({error: "error with auctioneditems table"});
+                        
+                    
+                    });                     
+                }
                 else
                     res.json({error: "error with items table"}); 
             }); 
