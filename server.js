@@ -125,43 +125,113 @@ router.post('/Items', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]
     }
-    var query = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')';
+    var query = 'SELECT * FROM AuctionItems A, Items I WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ')';
     connection.query(query, function(err, rows, fields){
-        if (!err)
-            res.json(rows); 
+        if (!err){
+            var query1 = 'SELECT * FROM SaleItems S, Items I WHERE S.itemID = I.itemID AND I.itemID IN (' + itemIDs + ')';  
+            connection.query(query1, function(err1, rows1, fields1){
+                if (!err1){
+                    resultObj = {auctionedItems: rows, saleItems: rows1}; 
+                    res.json(resultObj); 
+                }
+            }); 
+        }
         else
             res.json({error: "error with items table query"}); 
     });
 });
 router.get('/Items', function(req, res){
-    var query = "SELECT * FROM Items"; 
+    var query = "SELECT * FROM AuctionItems"; 
     connection.query(query, function(err, rows, fields){
         if (!err){
             var i = 0;
-            var itemArr = []; 
+            var auctionItems = [];
+            var saleItems = [];
             for (i=0; i < rows.length; i++)
-                itemArr.push(rows[i].itemID);
-            res.json(itemArr); 
+                auctionItems.push(rows[i].itemID);
+            var query1 = "SELECT * FROM SaleItems";
+            connection.query(query1, function(err1, rows1, fields){
+                if (!err1){
+                    var i = 0; 
+                    for(i=0; i < rows1.length; i++)
+                        saleItems.push(rows1[i].itemID); 
+                    result = {"auctionItems": auctionItems, "saleItems": saleItems};
+                    res.json(result); 
+                }
+                else
+                    res.json({error: "error with selecting * from SaleItems"}); 
+            }); 
         }
         else
-            res.json({error: "error with selecting * from items table"});
+            res.json({error: "error with selecting * from AuctionItems table"});
     }); 
 }); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
-    connection.query(query, req.body, function(err, res1){
+    var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url};
+    connection.query(query, itemData, function(err, res1){
+        insertID = res1.insertId;
         if (!err){
-            var query1 = 'SELECT * FROM Items WHERE itemID = ' + res1.insertId; 
+            var query1 = 'SELECT * FROM Items WHERE itemID = ' + insertID; 
             connection.query(query1, function(err1, rows, fields){
-                if (!err)
-                    res.json(rows[0]); 
+                if (!err1){
+                    var auctionedItem = {"itemID": insertID, "endTime": req.body.endTime, "reservePrice": req.body.reservePrice};
+                    var query2 = 'INSERT INTO AuctionItems SET ?';
+                    connection.query(query2, auctionedItem, function(err2, res2){
+                        if (!err2){
+                            var query3 = 'SELECT * FROM CategoriesHierarchy WHERE cid="' + req.body.cid + '"';
+                            connection.query(query3, function(err3, rows1, fields1){
+                                if (!err){
+                                    var query4 = 'INSERT INTO CategoryAssociation SET ?';
+                                    var catAssoc1 = {"itemID": res1.insertId, "cid": req.body.cid};
+                                    connection.query(query4, catAssoc1, function(err4, res2){
+                                        if (!err4){
+                                            if (rows1[0].up1 != null){
+                                                var query5 = 'INSERT INTO CategoryAssociation SET ?';
+                                                var catAssoc2 = {"itemID": res1.insertId, "cid": rows1[0].up1};
+                                                connection.query(query5, catAssoc2, function(err5, res3){
+                                                    if (!err5){
+                                                        if (rows1[0].up2 != null){
+                                                            var query6 = 'INSERT INTO CategoryAssociation SET ?';
+                                                            var catAssoc3 = {"itemID": res1.insertId, "cid": rows1[0].up2};
+                                                            connection.query(query6, catAssoc3, function(err6, res4){
+                                                                if (!err6){
+                                                                    res.json(rows[0]); 
+                                                                }
+                                                                else
+                                                                    res.json({error: "error inserting into CategoryAssociation table (up2)"});
+                                                            });
+                                                        }
+                                                        else
+                                                            res.json(rows[0]);
+                                                    }
+                                                    else
+                                                        res.json({error: "error inserting into CategoryAssociation table (up1)"});
+                                                        
+                                                }); 
+                                            }
+                                            else
+                                                res.json(rows[0]);
+                                        }
+                                        else
+                                            res.json({error: "error inserting into CategoryAssociation table (first cid)"});
+                                    }); 
+                                }
+                                else
+                                    res.json({error: "error selecting from CategoryHierarchy table"});
+                            
+                            });                             
+                        }
+                        else
+                            res.json({error: "error with AuctionedTtems table"});
+                    });                     
+                }
                 else
-                    res.json({error: "error with items table"}); 
+                    res.json({error: "error with Items table"}); 
             }); 
         }
         else{
-            throw err;
-            res.json({error: "error with items table insertion"}); 
+            res.json({error: "error with Items table insertion"}); 
         }
     }); 
 }); 
