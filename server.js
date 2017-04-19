@@ -216,8 +216,7 @@ router.post('/Item', function(req, res){
                             });                             
                         }
                         else
-                            throw err2; 
-//                            res.json({error: "error with AuctionedTtems table"});
+                            res.json({error: "error with AuctionedTtems table"});
                     });                     
                 }
                 else
@@ -225,7 +224,6 @@ router.post('/Item', function(req, res){
             }); 
         }
         else{
-            throw err;
             res.json({error: "error with Items table insertion"}); 
         }
     }); 
