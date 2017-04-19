@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Bootshop online Shopping cart</title>
+    <title>Himalaya.com</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -51,10 +51,10 @@
 	<span class="icon-bar"></span>
 </a>
   <div class="navbar-inner">
-    <a class="brand" href="index.html"><img src="themes/images/logo.png" alt="Bootsshop"/></a>
-		<form class="form-inline navbar-search" method="post" action="products.html" >
+    <a class="brand" href="index.html"><b>Himalaya.com</b></a>
+		<div class="form-inline navbar-search">
 		<input id="srchFld" class="srchTxt" type="text" />
-		  <select class="srchTxt">
+		  <select id="search-select" class="srchTxt">
 			<option>All</option>
 			<option>BABIES </option>
 			<option>BOYS </option>
@@ -62,8 +62,8 @@
 			<option>MENS </option>
 			<option>WOMENS </option>
 		</select> 
-		  <button type="submit" id="submitButton" class="btn btn-primary">Go</button>
-    </form>
+		  <button id="search-submit" class="btn btn-primary">Go</button>
+    </div>
     <ul id="topMenu" class="nav pull-right">
 		<li class=""><a href="normal.html">Delivery</a></li>
 		<li class=""><a href="contact.html">Contact</a></li>
@@ -79,10 +79,10 @@
 		</li>
 		<li class="vendor-element">
 		 	<a href="#vendor-add-modal" role="button" data-toggle="modal" style="padding-right:0">
-		 		<span class="btn btn-large btn-success">Post Item for Sale</span>
+		 		<span class="btn btn-large btn-success">Post Item for Auction</span>
 		 	</a>
 		</li>
-	<div id="login" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
+	<div id="login" class="modal hide fade in center" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 			<h3>Login</h3>
@@ -95,56 +95,159 @@
 			  <div class="control-group">
 				<input type="password" id="login-pass" placeholder="Password">
 			  </div>
-			  <div class="control-group">
-				<label class="checkbox">
-				<input type="checkbox"> Remember me
-				</label>
-			  </div>
 			</form>		
+		  </div>
+		  <div class="modal-footer">
 			<button id="login-submit" type="submit" class="btn btn-success">Sign in</button>
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
 		  </div>
 	</div>
-	<div id="signup" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
+	<div id="signup" class="modal hide fade in center" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 			<h3>Sign Up</h3>
 		  </div>
 		  <div class="modal-body">
 			<form class="form-horizontal loginFrm">
-			  <div class="control-group">								
-				<input type="text" id="signup-uid" placeholder="User Id">
-			  </div>
-			  <div class="control-group">
-				<input type="password" id="signup-pass" placeholder="Password">
-			  </div>
+				<div>
+			  	<div>
+					 <div class="control-group float-left">								
+						<input type="text" id="signup-uid" placeholder="User Id">
+					 </div>
+					 <div class="control-group float-right">								
+						<input type="text" id="signup-name" placeholder="Name - Bob">
+					 </div>
+			  	</div>
+			  	<div>
+					<div class="control-group float-left">								
+						<input type="text" id="signup-address" placeholder="Address - 123 Cherry Lane">
+					</div>
+					<div class="control-group float-right">								
+						<input type="text" id="signup-email" placeholder="Email - bob@email.com">
+					</div>
+			  	</div>
+			  	<div>
+				  	<div class="control-group float-left">								
+						<input type="text" id="signup-phone" placeholder="Phone - 1234567890">
+				  	</div>
+				  	<div class="control-group float-right">								
+						<input type="text" id="signup-age" placeholder="Age - 18">
+				  	</div>
+			  	</div>
+			  	<div>
+			  		<div class="control-group float-left">								
+						<input type="text" id="signup-gender" placeholder="Gender - M/F">
+			  		</div>
+			  		<div class="control-group float-right">								
+						<input type="text" id="signup-income" placeholder="Income - 50000">
+			  		</div>
+			  	</div>
+			  	<div>
+			  		<div class="control-group float-left">
+						<input type="password" id="signup-pass" placeholder="Password">
+			  		</div>
+			  		<div class="control-group float-right">
+						<input type="checkbox" id="signup-vendor-check">&nbsp;vendor?</input>
+			  		</div>
+			  	</div>
+			  	</div>
 			</form>		
-			<button id="signup-submit" type="submit" class="btn btn-success">Sign up</button>
-			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			
+		  </div>
+		  <div class="modal-footer">
+			<button id="signup-submit" class="btn btn-success">Sign up</button>
+			<button class="btn" data-dismiss="modal">Close</button>
 		  </div>
 	</div>
-	<div id="vendor-add-modal" class="modal hide fade in" tabindex="-1" role="dialog" aria-hidden="false" >
+	<div id="vendor-add-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3>Post Item for Sale</h3>
+			<h3>Post Item for Auction</h3>
 		  </div>
 		  <div class="modal-body">
 			<form class="form-horizontal">
-			  <div class="control-group">								
-				<input type="text" id="vendor-add-price" placeholder="Price - 5.00">
-			  </div>
-			  <div class="control-group">
-				<input type="text" id="vendor-add-location" placeholder="Location">
-			  </div>
-			  <div class="control-group">
-				<input type="text" id="vendor-add-description" placeholder="Description">
-			  </div>
-			  <div class="control-group">
-				<input type="text" id="vendor-add-url" placeholder="Image Url">
-			  </div>
+				<div>
+					<div class="control-group float-left">								
+						<input type="text" id="vendor-add-name" placeholder="Item Name">
+				  	</div>
+				  	<div class="control-group float-right">								
+						<input type="text" id="vendor-add-price" placeholder="Price - 5.00">
+				  	</div>
+			  	</div>
+			  	<div>
+			  		<div class="control-group float-left">
+						<input type="text" id="vendor-add-location" placeholder="Location">
+				  	</div>
+			  		<div class="control-group float-right">
+						<input type="text" id="vendor-add-description" placeholder="Description">
+			  		</div>
+			  	</div>
+			  	<div>
+			  		<div class="control-group float-left">
+						<input type="text" id="vendor-add-url" placeholder="Image Url">
+			  		</div>
+				  	<div class="control-group float-right">
+						<input type="text" id="vendor-add-reserve" placeholder="Reserve Price - 5.00">
+				  	</div>
+				  	
+			  	</div>
+			  	<div>
+			  		<div class="control-group float-left">
+						<input type="text" id="vendor-add-end-time" placeholder="End Time - 2017-04-04 23:59:59">
+					 </div>
+					 <select id="vendor-add-cat-select" class="float-right">
+						<option>BABIES</option>
+						<option>BABIES BOTTOMS</option>
+						<option>BABIES TOPS</option>
+						<option>BOYS</option>
+						<option>BOYS BOTTOMS</option>
+						<option>BOYS KHAKIS</option>
+						<option>BOYS SWEATPANTS</option>
+						<option>BOYS TOPS</option>
+						<option>GIRLS</option>
+						<option>GIRLS BOTTOMS</option>
+						<option>GIRLS TOPS</option>
+						<option>MENS</option>
+						<option>MENS BOTTOMS</option>
+						<option>MENS JEANS</option>
+						<option>MENS TOPS</option>
+						<option>MENS SHIRTS</option>
+						<option>WOMENS</option>
+						<option>WOMENS BOTTOMS</option>
+						<option>WOMENS SKIRTS</option>
+						<option>WOMENS TOPS</option>
+						<option>WOMENS DRESSES</option>
+					</select> 
+				</div>
 			</form>		
+		  </div>
+		  <div class="modal-footer">
 			<button id="vendor-add-submit" type="submit" class="btn btn-success">Submit</button>
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		  </div>
+	</div>
+	<a id="bid-modal-show" href="#bid-modal" role="button" data-toggle="modal" style="display: none"></a>
+	<div id="bid-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close bid-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Bid on Item</h3>
+		  </div>
+		  <div class="modal-body">
+			<form class="form-horizontal loginFrm">
+			  <div class="control-group">								
+				Please enter a bid for item:<br>
+				<b><span id="bid-modal-item-name"></span></b><br>
+				<b><span id="bid-modal-item-description"></span></b>
+			  </div>
+			  <div class="control-group">
+			  	Bid Amount: <br>
+				<input type="text" id="bid-modal-amount" placeholder="Amount - 5.00">
+			  </div>
+			</form>		
+		  </div>
+		  <div class="modal-footer">
+			<button id="bid-modal-submit" type="submit" class="btn btn-success bid-modal-close">Place Bid</button>
+			<button class="btn bid-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
 		  </div>
 	</div>
 		<div id="snackbar">Item has been added to your cart.</div>
