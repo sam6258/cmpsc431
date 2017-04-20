@@ -200,7 +200,20 @@ router.post('/getPayments', function(req, res){
         else
             res.json({error: "error selecting rows from CreditCards"}); 
     }); 
-    
+}); 
+router.post('/getBids', function(req, res){
+    var query = 'SELECT * FROM HighestBids WHERE UID = "' + req.body.UID + '"'; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            var resultData = []; 
+            var i = 0; 
+            for (i = 0; i < rows.length; i++)
+                resultData.push(rows[i].itemID); 
+            res.json(resultData); 
+        }
+        else
+            res.json({error: "error selecting rows from HighestBids"}); 
+    }); 
 }); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
