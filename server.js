@@ -192,6 +192,16 @@ router.post('/addPayment', function(req, res){
             res.json({error: "error inserting into CreditCard table"}); 
     }); 
 }); 
+router.post('/getPayments', function(req, res){
+    var query = 'SELECT * FROM CreditCards WHERE UID="' + req.body.UID + '"';
+    connection.query(query, function(err, rows, fields){
+        if (!err)
+            res.json(rows); 
+        else
+            res.json({error: "error selecting rows from CreditCards"}); 
+    }); 
+    
+}); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
