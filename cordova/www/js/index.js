@@ -6,6 +6,8 @@ $(document).ready(function() {
     var currentlyDisplayedItemsJSON = null;
     var shoppingCart = [];
     var biddingOn = null;
+    var showAuctionItems = true;
+    var showSaleItems = true;
 
     var formatter = new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -102,8 +104,8 @@ $(document).ready(function() {
                 "age": age,
                 "gender": gender,
                 "income": income,
-                "password": pass
-              //  "vendor": wantsVendor
+                "password": pass,
+                "vendor": wantsVendor
             };
             $.ajax({
                 url: "https://himalaya431.herokuapp.com/app/User",
@@ -316,53 +318,75 @@ $(document).ready(function() {
                 $("#sale-items").append(newRow);
             }
             var appendTo = $("#sale-items .row").last();
-            if (i >= auctionItems.length) {
+            if (i >= auctionItems.length && showSaleItems) {
                 appendTo.append(getSaleItemHTML(saleItems[i]));
                 count++;
             }
-            else if (i >= saleItems.length) {
+            else if (i >= saleItems.length && showAuctionItems) {
                 appendTo.append(getAuctionItemHTML(auctionItems[i]));
                 count++;
             }
             else {
-                appendTo.append(getAuctionItemHTML(auctionItems[i]));
-                count++;
-                if (count % 3 == 0) {
-                    var newRow = '<div class="row"></div>';
-                    $("#sale-items").append(newRow);
+                if (showAuctionItems) {
+                    appendTo.append(getAuctionItemHTML(auctionItems[i]));
+                    count++;
+                    if (count % 3 == 0 && showSaleItems) {
+                        var newRow = '<div class="row"></div>';
+                        $("#sale-items").append(newRow);
+                    }
                 }
-                appendTo = $("#sale-items .row").last();
-                appendTo.append(getSaleItemHTML(saleItems[i]));
-                count++;
+                if (showSaleItems) {
+                    appendTo = $("#sale-items .row").last();
+                    appendTo.append(getSaleItemHTML(saleItems[i]));
+                    count++;
+                }
             }
         }
 
         function getSaleItemHTML(itemObj) {
             var newItem =  '<div item-id="' + itemObj.itemID +'" quantity"' + itemObj.quantity + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
                                 '<div class="thumbnail">' + 
-                                    '<img style="max-width: 250px" src="' + itemObj.url + '" alt=""/>' +
+                                    '<img src="' + itemObj.url + '" alt=""/>' +
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center"><a class="btn">In Stock: ' + itemObj.quantity + '</a> <a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
-            return newItem
+            return newItem;
         }
 
         function getAuctionItemHTML(itemObj) {
             var newItem =  '<div item-id="' + itemObj.itemID +'" reserve-price="' + itemObj.reservePrice + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
                                 '<div class="thumbnail">' + 
-                                    '<img style="max-width: 250px" src="' + itemObj.url + '" alt=""/>' +
+                                    '<img src="' + itemObj.url + '" alt=""/>' +
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn bid-btn">Bid on Item</a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center"><a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> <a class="btn bid-btn">Bid on Item</a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
-            return newItem
+                            convertTimeStamp(itemObj.endTime);
+            return newItem;
+        }
+
+        function convertTimeStamp(stamp) {
+            var t = stamp.split(/[- T : \.]/);
+            var d = new Date(stamp);
+
+            return (d.getMonth() + 1) + "/" + d.getDay() + "/" + (d.getFullYear() + "").slice(2, 4) + " " + getDateString (d);
+            function getDateString (date) {
+                var hours = date.getHours();
+                var minutes = date.getMinutes();
+                var ampm = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                minutes = minutes < 10 ? '0'+minutes : minutes;
+                var strTime = hours + ':' + minutes + ampm;
+                return strTime;
+             }
         }
 /*
         for (var i = 0; i < auctionItems.length; i++)
@@ -626,4 +650,27 @@ $(document).ready(function() {
             scrollTop: $(id).offset().top
         }, time);
     }
+    $("#show-auction-check").click();
+
+    $("#show-auction-check").click(function() {
+        if ($(this).is(":checked")) {
+            showAuctionItems = true;
+        }
+        else {
+            showAuctionItems = false;
+        }
+        resetDisplayItems();
+    });
+
+    $("#show-sale-check").click();
+
+    $("#show-sale-check").click(function() {
+        if ($(this).is(":checked")) {
+            showSaleItems = true;
+        }
+        else {
+            showSaleItems = false;
+        }
+        resetDisplayItems();
+    });
 });

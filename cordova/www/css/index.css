@@ -2,6 +2,12 @@
   margin-left: 15px;
 }
 
+@media screen and (max-width: 767px) {
+  .span3 {
+    margin-left: auto;
+  }
+}
+
 a {
   cursor: pointer;
 }
@@ -68,4 +74,8 @@ However, delay the fade out process for 2.5 seconds */
 
 #srchFld {
   padding-left: 30px;
+}
+
+#show-auction-check #text {
+  font-size: 200%;
 }

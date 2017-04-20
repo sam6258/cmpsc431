@@ -53,7 +53,7 @@
   <div class="navbar-inner">
     <a class="brand" href="index.html"><b>Himalaya.com</b></a>
 		<div class="form-inline navbar-search">
-		<input id="srchFld" class="srchTxt" type="text" />
+		<input autocomplete="off" id="srchFld" class="srchTxt" type="text" />
 		  <select id="search-select" class="srchTxt">
 			<option>All</option>
 			<option>BABIES </option>
@@ -90,10 +90,10 @@
 		  <div class="modal-body">
 			<form class="form-horizontal loginFrm">
 			  <div class="control-group">								
-				<input type="text" id="login-uid" placeholder="User Id">
+				<input autocomplete="off" type="text" id="login-uid" placeholder="User Id">
 			  </div>
 			  <div class="control-group">
-				<input type="password" id="login-pass" placeholder="Password">
+				<input autocomplete="off" type="password" id="login-pass" placeholder="Password">
 			  </div>
 			</form>		
 		  </div>
@@ -112,42 +112,42 @@
 				<div>
 			  	<div>
 					 <div class="control-group float-left">								
-						<input type="text" id="signup-uid" placeholder="User Id">
+						<input autocomplete="off" type="text" id="signup-uid" placeholder="User Id">
 					 </div>
-					 <div class="control-group float-right">								
-						<input type="text" id="signup-name" placeholder="Name - Bob">
+					 <div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="signup-name" placeholder="Name - Bob">
 					 </div>
 			  	</div>
 			  	<div>
 					<div class="control-group float-left">								
-						<input type="text" id="signup-address" placeholder="Address - 123 Cherry Lane">
+						<input autocomplete="off" type="text" id="signup-address" placeholder="Address - 123 Cherry Lane">
 					</div>
-					<div class="control-group float-right">								
-						<input type="text" id="signup-email" placeholder="Email - bob@email.com">
+					<div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="signup-email" placeholder="Email - bob@email.com">
 					</div>
 			  	</div>
 			  	<div>
 				  	<div class="control-group float-left">								
-						<input type="text" id="signup-phone" placeholder="Phone - 1234567890">
+						<input autocomplete="off" type="text" id="signup-phone" placeholder="Phone - 1234567890">
 				  	</div>
-				  	<div class="control-group float-right">								
-						<input type="text" id="signup-age" placeholder="Age - 18">
+				  	<div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="signup-age" placeholder="Age - 18">
 				  	</div>
 			  	</div>
 			  	<div>
 			  		<div class="control-group float-left">								
-						<input type="text" id="signup-gender" placeholder="Gender - M/F">
+						<input autocomplete="off" type="text" id="signup-gender" placeholder="Gender - M/F">
 			  		</div>
-			  		<div class="control-group float-right">								
-						<input type="text" id="signup-income" placeholder="Income - 50000">
+			  		<div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="signup-income" placeholder="Income - 50000">
 			  		</div>
 			  	</div>
 			  	<div>
 			  		<div class="control-group float-left">
-						<input type="password" id="signup-pass" placeholder="Password">
+						<input autocomplete="off" type="password" id="signup-pass" placeholder="Password">
 			  		</div>
-			  		<div class="control-group float-right">
-						<input type="checkbox" id="signup-vendor-check">&nbsp;vendor?</input>
+			  		<div class="control-group float-left">
+						<input autocomplete="off" type="checkbox" id="signup-vendor-check">&nbsp;vendor?</input>
 			  		</div>
 			  	</div>
 			  	</div>
@@ -165,59 +165,61 @@
 			<h3>Post Item for Auction</h3>
 		  </div>
 		  <div class="modal-body">
-			<form class="form-horizontal">
+			<form class="form-horizontal loginFrm">
 				<div>
 					<div class="control-group float-left">								
-						<input type="text" id="vendor-add-name" placeholder="Item Name">
+						<input autocomplete="off" type="text" id="vendor-add-name" placeholder="Item Name">
 				  	</div>
-				  	<div class="control-group float-right">								
-						<input type="text" id="vendor-add-price" placeholder="Price - 5.00">
+				  	<div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="vendor-add-price" placeholder="Price - 5.00">
 				  	</div>
 			  	</div>
 			  	<div>
 			  		<div class="control-group float-left">
-						<input type="text" id="vendor-add-location" placeholder="Location">
+						<input autocomplete="off" type="text" id="vendor-add-location" placeholder="Location">
 				  	</div>
-			  		<div class="control-group float-right">
-						<input type="text" id="vendor-add-description" placeholder="Description">
+			  		<div class="control-group float-left">
+						<input autocomplete="off" type="text" id="vendor-add-description" placeholder="Description">
 			  		</div>
 			  	</div>
 			  	<div>
 			  		<div class="control-group float-left">
-						<input type="text" id="vendor-add-url" placeholder="Image Url">
+						<input autocomplete="off" type="text" id="vendor-add-url" placeholder="Image Url">
 			  		</div>
-				  	<div class="control-group float-right">
-						<input type="text" id="vendor-add-reserve" placeholder="Reserve Price - 5.00">
+				  	<div class="control-group float-left">
+						<input autocomplete="off" type="text" id="vendor-add-reserve" placeholder="Reserve Price - 5.00">
 				  	</div>
 				  	
 			  	</div>
 			  	<div>
 			  		<div class="control-group float-left">
-						<input type="text" id="vendor-add-end-time" placeholder="End Time - 2017-04-04 23:59:59">
+						<input autocomplete="off" type="text" id="vendor-add-end-time" placeholder="End Time - 2017-04-04 23:59:59">
 					 </div>
-					 <select id="vendor-add-cat-select" class="float-right">
-						<option>BABIES</option>
-						<option>BABIES BOTTOMS</option>
-						<option>BABIES TOPS</option>
-						<option>BOYS</option>
-						<option>BOYS BOTTOMS</option>
-						<option>BOYS KHAKIS</option>
-						<option>BOYS SWEATPANTS</option>
-						<option>BOYS TOPS</option>
-						<option>GIRLS</option>
-						<option>GIRLS BOTTOMS</option>
-						<option>GIRLS TOPS</option>
-						<option>MENS</option>
-						<option>MENS BOTTOMS</option>
-						<option>MENS JEANS</option>
-						<option>MENS TOPS</option>
-						<option>MENS SHIRTS</option>
-						<option>WOMENS</option>
-						<option>WOMENS BOTTOMS</option>
-						<option>WOMENS SKIRTS</option>
-						<option>WOMENS TOPS</option>
-						<option>WOMENS DRESSES</option>
-					</select> 
+					 <div class="control-group float-left">
+						 <select id="vendor-add-cat-select">
+							<option>BABIES</option>
+							<option>BABIES BOTTOMS</option>
+							<option>BABIES TOPS</option>
+							<option>BOYS</option>
+							<option>BOYS BOTTOMS</option>
+							<option>BOYS KHAKIS</option>
+							<option>BOYS SWEATPANTS</option>
+							<option>BOYS TOPS</option>
+							<option>GIRLS</option>
+							<option>GIRLS BOTTOMS</option>
+							<option>GIRLS TOPS</option>
+							<option>MENS</option>
+							<option>MENS BOTTOMS</option>
+							<option>MENS JEANS</option>
+							<option>MENS TOPS</option>
+							<option>MENS SHIRTS</option>
+							<option>WOMENS</option>
+							<option>WOMENS BOTTOMS</option>
+							<option>WOMENS SKIRTS</option>
+							<option>WOMENS TOPS</option>
+							<option>WOMENS DRESSES</option>
+						</select> 
+					</div>
 				</div>
 			</form>		
 		  </div>
@@ -241,7 +243,7 @@
 			  </div>
 			  <div class="control-group">
 			  	Bid Amount: <br>
-				<input type="text" id="bid-modal-amount" placeholder="Amount - 5.00">
+				<input autocomplete="off" type="text" id="bid-modal-amount" placeholder="Amount - 5.00">
 			  </div>
 			</form>		
 		  </div>
@@ -340,6 +342,7 @@
 					<li class="item-category" category="BOYS BOTTOMS"><a>BOTTOMS </a></li>
 					<li class="item-category" category="BOYS KHAKIS"><a><i class="icon-chevron-right"></i>Khakis</a></li>				
 					<li class="item-category" category="BOYS SWEATPANTS"><a><i class="icon-chevron-right"></i>Sweatpants</a></li>	
+					<li class="item-category" category="BOYS TOPS"><a>BOTTOMS </a></li>
 				</ul>
 			</li>
 			<li class="subMenu item-category" category="GIRLS"><a> GIRLS </a>
@@ -571,7 +574,15 @@
 			  </div>
 			  </div>
 		</div>-->
-		<h4>Products </h4>
+					<div class="span2">
+						<h4>Products</h4>
+					</div>
+					<div class="span2">
+						<h6><input autocomplete="off" id="show-auction-check" type="checkbox">&nbsp;Show Auction Items</input></h6>
+					</div>
+					<div class="span2">
+						<h6><input autocomplete="off" id="show-sale-check" type="checkbox">&nbsp;Show Sale Items</input></h6>
+					</div>
 			<div id="sale-items" class="container-fluid">
 <!--
 			<div class="row"><div item-id="106" class="span3">
