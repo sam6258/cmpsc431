@@ -182,6 +182,16 @@ router.get('/Items', function(req, res){
             res.json({error: "error with selecting * from AuctionItems table"});
     }); 
 }); 
+router.post('/addPayment', function(req, res){
+    var query = 'INSERT INTO CreditCards set ?'; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            res.json(req.body); 
+        }
+        else
+            res.json({error: "error inserting into CreditCard table"}); 
+    }); 
+}); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
@@ -251,3 +261,4 @@ router.post('/Item', function(req, res){
         }
     }); 
 }); 
+
