@@ -215,6 +215,59 @@ router.post('/getBids', function(req, res){
             res.json({error: "error selecting rows from HighestBids"}); 
     }); 
 }); 
+router.post('/bid', function(req, res){
+    var query = 'SELECT * FROM Items WHERE itemID = ' + req.body.itemID; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            if (rows.length > 0){
+                if (rows[0].price >= req.body.bidAmount){
+                    res.json({error: "error bid amount is lower than or equal to current item price"});
+                }
+                else{
+                    var query1 = 'SELECT * FROM CreditCards WHERE UID="' + req.body.UID + '"';
+                    connection.query(query1, function(err1, rows1, fields1){
+                        if (!err1){
+                            if (rows1.length > 0){
+                                var query2 = 'DELETE FROM HighestBids WHERE itemID = ' + req.body.itemID; 
+                                connection.query(query2, function(err3, rows2, fields2){
+                                    if (!err3){
+                                        var newBid = {itemID: req.body.itemID, UID: req.body.UID};
+                                        var query3 = 'INSERT INTO HighestBids SET ?'; 
+                                        connection.query(query3, newBid, function(err4, res1){
+                                            if (!err4){
+                                                var query4 = 'UPDATE Items SET price = ' + req.body.bidAmount + ' WHERE itemID = ' + req.body.itemID; 
+                                                connection.query(query4, function(err5, rows3, fields3){
+                                                    if (!err){
+                                                        var resultData = {highestBidder: true, newPrice: req.body.bidAmount}
+                                                        res.json(resultData); 
+                                                    }
+                                                    else
+                                                        res.json({error: "error updating Items item prices to new price"}); 
+                                                }); 
+                                            }
+                                            else
+                                                res.json({error: "error inserting into HighestBids"}); 
+                                        }); 
+                                    }
+                                    else
+                                        res.json({error: "delete statement in HighestBids failed"}); 
+                                }); 
+                            }
+                            else
+                                res.json({error: "no credit cards on file"}); 
+                        } 
+                        else
+                            res.json({error: "error selecting rows from CreditCards"}); 
+                    });                 
+                }
+                
+            }
+            else
+                res.json({error: "item doesn't exist"}); 
+        }
+    
+    }); 
+}); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
