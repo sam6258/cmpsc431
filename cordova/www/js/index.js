@@ -44,6 +44,7 @@ $(document).ready(function() {
                 else {
                     populateCreditCardSelects();
                     $(".login-buttons").hide();
+                    $(".after-login").show();
                     $(".uid").html(currentUser.UID);
                     if (currentUser.vendor) {
                         $(".vendor-element").show();
