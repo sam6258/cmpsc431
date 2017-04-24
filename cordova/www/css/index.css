@@ -79,3 +79,7 @@ However, delay the fade out process for 2.5 seconds */
 #show-auction-check #text {
   font-size: 200%;
 }
+
+#payment_methods {
+  cursor: pointer;
+}

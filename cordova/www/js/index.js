@@ -217,6 +217,57 @@ $(document).ready(function() {
         }
     });
 
+    $("#add-pay-submit").click(function() {
+        var cardNum = $("#add-pay-cardnum").val();
+        var date = $("#add-pay-expire").val();
+        var cv2 = $("#add-pay-cv2").val();
+        var type = $("#add-pay-select").find(":selected").text();
+
+        if (currentUser == null) {
+            alert("You must be signed in to add a payment method.");
+        }
+        else {
+            var postObj = {
+                "number": parseInt(cardNum),
+                "UID": currentUser.UID,
+                "type": type,
+                "date": date,
+                "cv2": parseInt(cv2)
+            };
+            console.log(postObj);
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/addPayment",
+                type: "POST",
+                data: JSON.stringify(postObj),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        $("#payment-methods-modal .close").click();
+
+                        showSnackBar("Payment method couldn't be added.");
+                    }
+                    else {
+                        $("#payment-methods-modal input").each(function() {
+                            $(this).val("");
+                        })
+                        $("#payment-methods-modal .close").click();
+                        
+                        showSnackBar("Payment method has been added to your account.");
+                    }
+                },
+                error: function(error) {
+                    $("#payment-methods-modal .close").click();
+                    showSnackBar("Payment method couldn't be added.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+        }
+    });
+
     $(".item-category").click(function(e) {
         e.stopPropagation();
         var category = $(this).attr('category');
@@ -463,8 +514,49 @@ $(document).ready(function() {
     $(".bid-modal-close").click(function() {
         if ($(this).hasClass("btn-success")) {
             //needs post request
-            showSnackBar("You bid $" + $("#bid-modal-amount").val() + " on " + biddingOn.attr('name'));
-            $("#bid-modal .close").click();
+            if (currentUser == null) {
+                $("#bid-modal .close").click();
+                showSnackBar("You must be logged in to bid.");
+            }
+            else {
+                var amount = parseFloat($("#bid-modal-amount").val());
+                var itemID = parseInt(biddingOn.attr('item-id'));
+                var postObj = {
+                    "UID": currentUser.UID,
+                    "bidAmount": amount,
+                    "itemID": itemID
+                }
+                $.ajax({
+                    url: "https://himalaya431.herokuapp.com/app/bid",
+                    type: "POST",
+                    data: JSON.stringify(postObj),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                    },
+                    crossDomain: true,
+                    success: function(data){
+                        if (data.error) {
+                            $("#bid-modal .close").click();
+
+                            showSnackBar(data.error);
+                        }
+                        else {
+                            showSnackBar("You bid $" + $("#bid-modal-amount").val() + " on " + biddingOn.attr('name'));
+                            $("#bid-modal input").each(function() {
+                                $(this).val("");
+                            })
+                            $("#bid-modal .close").click();
+                            biddingOn = null;
+                        }
+                    },
+                    error: function(error) {
+                        $("#bid-modal .close").click();
+                        showSnackBar("Error bidding on item.");
+                        console.log("ERROR: ");
+                        console.log(error);
+                    }
+                });
+            }
         }
         else {
             biddingOn = null;

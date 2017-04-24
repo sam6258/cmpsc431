@@ -252,6 +252,44 @@
 			<button class="btn bid-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
 		  </div>
 	</div>
+	<div id="payment-methods-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Add a Payment Method</h3>
+		  </div>
+		  <div class="modal-body">
+			<form class="form-horizontal loginFrm">
+				<div>
+				  	<div>
+						 <div class="control-group float-left">								
+							<input autocomplete="off" type="text" id="add-pay-cardnum" placeholder="Card Number">
+						 </div>
+						 <div class="control-group float-left">								
+							<input autocomplete="off" type="text" id="add-pay-expire" placeholder="Expiration - 2017-23-08">
+						 </div>
+				  	</div>
+				  	<div>
+						<div class="control-group float-left">								
+							<input autocomplete="off" type="text" id="add-pay-cv2" placeholder="CV2 - 123">
+						</div>
+						<div class="control-group float-left">
+						 <select id="add-pay-select">
+							<option>VISA</option>
+							<option>DISCOVER</option>
+							<option>AMEXPRESS</option>
+							<option>MASTERCARD</option>
+						</select> 
+					</div>
+				  	</div>
+			  	</div>
+			</form>	
+			</div>
+			<div class="modal-footer">
+				<button id="add-pay-submit" type="submit" class="btn btn-success">Add Payment Method</button>
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			  </div>	
+		  </div>
+
 		<div id="snackbar">Item has been added to your cart.</div>
 	</li>
     </ul>
@@ -384,13 +422,14 @@
 				    <h4 style="text-align:center"><a class="btn" href="product_details.html"> <i class="icon-zoom-in"></i></a> <a class="btn" href="#">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary" href="#">$222.00</a></h4>
 				</div>
 			  </div><br/>-->
-			  <!--
-			<div class="thumbnail">
-				<img src="themes/images/payment_methods.png" title="Bootshop Payment Methods" alt="Payments Methods">
-				<div class="caption">
-				  <h5>Payment Methods</h5>
-				</div>
-			</div>-->
+			<div  class="thumbnail">
+		 		<a id="payment-methods-modal-show" href="#payment-methods-modal" role="button" data-toggle="modal">
+					<img src="themes/images/payment_methods.png" title="Himalaya Payment Methods" alt="Payments Methods">
+					<div class="caption">
+					  <h5>Payment Methods</h5>
+					</div>
+				</a>
+			</div>
 	</div>
 <!-- Sidebar end=============================================== -->
 		<div class="span9">		
