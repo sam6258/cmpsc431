@@ -219,91 +219,95 @@ router.post('/getBids', function(req, res){
 }); 
 router.post('/buy', function(req, res){
     var itemIDs = ""; 
+    var i = 0; 
     for (i = 0; i < req.body.itemIDs.length; i++){
         if ( i < req.body.itemIDs.length - 1)
-            itemIDs = itemIDs + req.body.itemIDs[i] + ',';
+            itemIDs = itemIDs + req.body.itemIDs[i]["id"] + ',';
         else
-            itemIDs = itemIDs + req.body.itemIDs[i]
+            itemIDs = itemIDs + req.body.itemIDs[i]["id"]
     }    
     var query = 'SELECT * FROM SaleItems WHERE itemID IN (' + itemIDs + ')'; 
     connection.query(query, function(err, rows, fields){
         if (!err){
             var inStock = 1; 
             var i = 0; 
-            var totalSum = 0; 
-            for (i = 0; i < rows.length; i++){
-                if (rows[i].quantity == 0)
-                    inStock = 0;
-            } 
-            if (inStock == 0)
-                res.json({error: "one or more of the items are out of stock"});
-            else{
-                var query1 = 'SELECT * FROM CreditCards WHERE number = ' + req.body.cardNumber; 
-                connection.query(query1, function(err1, rows1, fields1){
-                    if (!err1){
-                        if (rows1.length > 0)
-                        {
-                            if (rows1[0].number == req.body.cardNumber && rows1[0].UID == req.body.UID && rows1[0].type == req.body.type && rows1[0].date == req.body.date && rows1[0].cv2 == req.body.cv2){
-                                var query2 = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')'; 
-                                connection.query(query2, function(err2, rows2, fields2){
-                                    if (!err2){
-                                        for (i = 0; i < rows2.length; i++)
-                                            totalSum = totalSum + rows2[i].price; 
-                                        var d = new Date(); 
-                                        var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth; 
-                                        var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
-                                        var query3 = 'INSERT INTO Shipments SET ?'; 
-                                        connection.query(query3, newShipment, function(err3, res3){
-                                            if (!err3){
-                                                var i = 0; 
-                                                async.whilst(function () {
-                                                  return i < req.body.itemIDs.length;
-                                                },
-                                                function (next) {
-                                                    var purchasedItem = {shipID: res3.insertId, itemID: req.body.itemIDs[i], quantity: 1, location: req.body.location};
-                                                    var query4 = 'INSERT INTO PurchasedItems SET ?'; 
-                                                    connection.query(query4, purchasedItem, function(err4, res4){
-                                                        if (!err4){
-                                                            var query5 = 'UPDATE SaleItems SET quantity = quantity - 1 WHERE itemID = ' + req.body.itemIDs[i]; 
-                                                            connection.query(query5, function(err5, rows3, fields3){
-                                                                if (!err5){
-                                                                    i++; 
-                                                                    next(); 
-                                                                }
-                                                                else
-                                                                    next(err5);  
-                                                            }); 
-                                                        }
+            var totalSum = 0;
+            if (rows.length != req.body.itemIDs.length)
+                res.json({error:"at least one item you are purchasing does not exist in SaleItems table"});
+            else
+                for (i = 0; i < rows.length; i++){
+                    if ((rows[i].quantity - req.body.itemIDs[i]["quantity"]) < 0)
+                        inStock = 0;
+                } 
+                if (inStock == 0)
+                    res.json({error: "one or more of the items you have purchased exceeds the quantity that exists for the item"});
+                else{
+                    var query1 = 'SELECT * FROM CreditCards WHERE number = ' + req.body.cardNumber; 
+                    connection.query(query1, function(err1, rows1, fields1){
+                        if (!err1){
+                            if (rows1.length > 0)
+                            {
+                                if (rows1[0].number == req.body.cardNumber && rows1[0].UID == req.body.UID && rows1[0].type == req.body.type && rows1[0].date == req.body.date && rows1[0].cv2 == req.body.cv2){
+                                    var query2 = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')'; 
+                                    connection.query(query2, function(err2, rows2, fields2){
+                                        if (!err2){
+                                            for (i = 0; i < rows2.length; i++)
+                                                totalSum = totalSum + rows2[i].price; 
+                                            var d = new Date(); 
+                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth; 
+                                            var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
+                                            var query3 = 'INSERT INTO Shipments SET ?'; 
+                                            connection.query(query3, newShipment, function(err3, res3){
+                                                if (!err3){
+                                                    var i = 0; 
+                                                    async.whilst(function () {
+                                                      return i < req.body.itemIDs.length;
+                                                    },
+                                                    function (next) {
+                                                        var purchasedItem = {shipID: res3.insertId, itemID: req.body.itemIDs[i]["id"], quantity: req.body.itemIDs[i]["quantity"], location: req.body.location};
+                                                        var query4 = 'INSERT INTO PurchasedItems SET ?'; 
+                                                        connection.query(query4, purchasedItem, function(err4, res4){
+                                                            if (!err4){
+                                                                var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                connection.query(query5, function(err5, rows3, fields3){
+                                                                    if (!err5){
+                                                                        i++; 
+                                                                        next(); 
+                                                                    }
+                                                                    else
+                                                                        next(err5);  
+                                                                }); 
+                                                            }
+                                                            else
+                                                                next(err4); 
+                                                        }); 
+                                                    },
+                                                    function (err) {
+                                                        if(err) 
+                                                            res.json({error: err}); 
                                                         else
-                                                            next(err4); 
-                                                    }); 
-                                                },
-                                                function (err) {
-                                                    if(err) 
-                                                        res.json({error: err}); 
-                                                    else
-                                                        res.json({success: true}); 
-                                                });                                                 
-                                            }
-                                            else
-                                                res.json({error: "error when inserting into Shipments"}); 
-                                        }); 
-                                    }
-                                    else
-                                        res.json({error: "error selecting items from Items table"}); 
-                                }); 
-                                
+                                                            res.json({success: true}); 
+                                                    });                                                 
+                                                }
+                                                else
+                                                    res.json({error: "error when inserting into Shipments"}); 
+                                            }); 
+                                        }
+                                        else
+                                            res.json({error: "error selecting items from Items table"}); 
+                                    }); 
+
+                                }
+                                else
+                                    res.json({error: "credit card info incorrect"}); 
                             }
                             else
-                                res.json({error: "credit card info incorrect"}); 
+                                res.json({error: "credit card does not exist on file"}); 
                         }
                         else
-                            res.json({error: "credit card does not exist on file"}); 
-                    }
-                    else
-                        res.json({error: "error when querying CreditCards table"}); 
-                });
-            }
+                            res.json({error: "error when querying CreditCards table"}); 
+                    });
+                }
         }
         else
             res.json({error: "error finding items in SaleItems table"}); 
