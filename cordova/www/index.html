@@ -39,7 +39,7 @@
 	<div class="span6">Welcome! <strong class="uid"></strong></div>
 	<div class="span6">
 	<div class="pull-right">
-		<a href="product_summary.html"><span class="btn btn-mini btn-primary"><i class="icon-shopping-cart icon-white"></i> [ <span class="cart-count">0</span> ] Items in your cart </span> </a> 
+		<a class="render-cart" href="#mycart-modal" role="button" data-toggle="modal"><span class="btn btn-mini btn-primary"><i class="icon-shopping-cart icon-white"></i> [ <span class="cart-count">0</span> ] Items in your cart </span> </a> 
 	</div>
 	</div>
 </div>
@@ -239,7 +239,7 @@
 			  <div class="control-group">								
 				Please enter a bid for item:<br>
 				<b><span id="bid-modal-item-name"></span></b><br>
-				<b><span id="bid-modal-item-description"></span></b>
+				<span id="bid-modal-item-description"></span>
 			  </div>
 			  <div class="control-group">
 			  	Bid Amount: <br>
@@ -252,43 +252,87 @@
 			<button class="btn bid-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
 		  </div>
 	</div>
-	<div id="payment-methods-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
+	<a id="buy-modal-show" href="#buy-modal" role="button" data-toggle="modal" style="display: none"></a>
+	<div id="buy-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
 		  <div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3>Add a Payment Method</h3>
+			<button type="button" class="close buy-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Buy Item</h3>
 		  </div>
 		  <div class="modal-body">
 			<form class="form-horizontal loginFrm">
-				<div>
-				  	<div>
-						 <div class="control-group float-left">								
-							<input autocomplete="off" type="text" id="add-pay-cardnum" placeholder="Card Number">
-						 </div>
-						 <div class="control-group float-left">								
-							<input autocomplete="off" type="text" id="add-pay-expire" placeholder="Expiration - 2017-23-08">
-						 </div>
-				  	</div>
-				  	<div>
-						<div class="control-group float-left">								
-							<input autocomplete="off" type="text" id="add-pay-cv2" placeholder="CV2 - 123">
-						</div>
-						<div class="control-group float-left">
-						 <select id="add-pay-select">
-							<option>VISA</option>
-							<option>DISCOVER</option>
-							<option>AMEXPRESS</option>
-							<option>MASTERCARD</option>
-						</select> 
-					</div>
-				  	</div>
-			  	</div>
-			</form>	
-			</div>
-			<div class="modal-footer">
-				<button id="add-pay-submit" type="submit" class="btn btn-success">Add Payment Method</button>
-				<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-			  </div>	
+			  <div class="control-group">								
+				Please confirm purchase for item:<br>
+				<b><span id="buy-modal-item-name"></span></b><br>
+				<span id="buy-modal-item-description"></span><br>
+				<b><span id="buy-modal-item-price"></span></b><br>
+				<input autocomplete="off" type="text" id="buy-modal-cv2" placeholder="CV2 - 123">
+				<select id="buy-modal-select" class="credit-card-select">
+				</select> 
+			  </div>
+			</form>		
 		  </div>
+		  <div class="modal-footer">
+			<button id="buy-modal-submit" type="submit" class="btn btn-success buy-modal-close">Confirm Purchase</button>
+			<button class="btn buy-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		  </div>
+	</div>
+	<div id="payment-methods-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3>Add a Payment Method</h3>
+	  </div>
+	  <div class="modal-body">
+		<form class="form-horizontal loginFrm">
+			<div>
+			  	<div>
+					 <div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="add-pay-cardnum" placeholder="Card Number">
+					 </div>
+					 <div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="add-pay-expire" placeholder="Expiration - 2017-23-08">
+					 </div>
+			  	</div>
+			  	<div>
+					<div class="control-group float-left">								
+						<input autocomplete="off" type="text" id="add-pay-cv2" placeholder="CV2 - 123">
+					</div>
+					<div class="control-group float-left">
+					 <select id="add-pay-select">
+						<option>VISA</option>
+						<option>DISCOVER</option>
+						<option>AMEXPRESS</option>
+						<option>MASTERCARD</option>
+					</select> 
+				</div>
+			  	</div>
+		  	</div>
+		</form>	
+		</div>
+		<div class="modal-footer">
+			<button id="add-pay-submit" type="submit" class="btn btn-success">Add Payment Method</button>
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		  </div>	
+	  </div>
+
+	<div id="mycart-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close mycart-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Shopping Cart</h3>
+		  </div>
+		  <div class="modal-body">
+				<h3>Items in your cart:</h3>
+				<div id="mycart-thumbnails">
+					You have no items in your cart.
+				</div>
+				<input autocomplete="off" type="text" id="mycart-modal-cv2" placeholder="CV2 - 123">
+				<select id="mycart-modal-select" class="credit-card-select">
+				</select> 
+		  </div>
+		  <div class="modal-footer">
+			<button id="mycart-modal-submit" type="submit" class="btn btn-success mycart-modal-close">Confirm Purchase</button>
+			<button class="btn mycart-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		  </div>
+	</div>
 
 		<div id="snackbar">Item has been added to your cart.</div>
 	</li>
@@ -367,9 +411,9 @@
 	<div class="row">
 <!-- Sidebar ================================================== -->
 	<div id="sidebar" class="span3">
-		<div class="well well-small"><a id="myCart" href="product_summary.html"><img src="themes/images/ico-cart.png" alt="cart"><span class="cart-count">0</span> Items in your cart  <span class="badge badge-warning pull-right cart-cost">$0.00</span></a></div>
+		<div class="well well-small"><a id="myCart" class="render-cart" href="#mycart-modal" role="button" data-toggle="modal"><img src="themes/images/ico-cart.png" alt="cart"><span class="cart-count">0</span> Items in your cart  <span class="badge badge-warning pull-right cart-cost">$0.00</span></a></div>
 		<ul id="sideManu" class="nav nav-tabs nav-stacked">
-			<li class="subMenu open item-category" category="BABIES"><a> BABIES </a>
+			<li class="subMenu item-category" category="BABIES"><a> BABIES </a>
 				<ul>
 					<li class="item-category" category="BABIES BOTTOMS"><a class="active"><i class="icon-chevron-right"></i>Bottoms</a></li>
 					<li class="item-category" category="BABIES TOPS"><a><i class="icon-chevron-right"></i>Tops </a></li>

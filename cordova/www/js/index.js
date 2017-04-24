@@ -14,8 +14,11 @@ $(document).ready(function() {
                   currency: 'USD',
                   minimumFractionDigits: 2,
                 });
+    var cards = [];
+
 
     initializeDisplayItems();
+
     $(".vendor-element").hide();
     $("#login-submit").click(function() {
         uid = $("#login-uid").val();
@@ -39,6 +42,7 @@ $(document).ready(function() {
                     uid = null;
                 }
                 else {
+                    populateCreditCardSelects();
                     $(".login-buttons").hide();
                     $(".uid").html(currentUser.UID);
                     if (currentUser.vendor) {
@@ -234,7 +238,6 @@ $(document).ready(function() {
                 "date": date,
                 "cv2": parseInt(cv2)
             };
-            console.log(postObj);
             $.ajax({
                 url: "https://himalaya431.herokuapp.com/app/addPayment",
                 type: "POST",
@@ -250,6 +253,7 @@ $(document).ready(function() {
                         showSnackBar("Payment method couldn't be added.");
                     }
                     else {
+                        populateCreditCardSelects();
                         $("#payment-methods-modal input").each(function() {
                             $(this).val("");
                         })
@@ -364,6 +368,7 @@ $(document).ready(function() {
         var saleItems = currentlyDisplayedItemsJSON.saleItems;
         var count = 0;
         for (var i = 0; i < auctionItems.length || i < saleItems.length; i++) {
+            console.log(i);
             if (count % 3 == 0) {
                 var newRow = '<div class="row"></div>';
                 $("#sale-items").append(newRow);
@@ -371,6 +376,8 @@ $(document).ready(function() {
             var appendTo = $("#sale-items .row").last();
             if (i >= auctionItems.length && showSaleItems) {
                 appendTo.append(getSaleItemHTML(saleItems[i]));
+                                    console.log("376")
+
                 count++;
             }
             else if (i >= saleItems.length && showAuctionItems) {
@@ -378,7 +385,7 @@ $(document).ready(function() {
                 count++;
             }
             else {
-                if (showAuctionItems) {
+                if (showAuctionItems && auctionItems[i] != null) {
                     appendTo.append(getAuctionItemHTML(auctionItems[i]));
                     count++;
                     if (count % 3 == 0 && showSaleItems) {
@@ -386,8 +393,11 @@ $(document).ready(function() {
                         $("#sale-items").append(newRow);
                     }
                 }
-                if (showSaleItems) {
+                if (showSaleItems && saleItems[i] != null) {
                     appendTo = $("#sale-items .row").last();
+                    if (saleItems[i] == null) {
+                        console.log("here");
+                    }
                     appendTo.append(getSaleItemHTML(saleItems[i]));
                     count++;
                 }
@@ -395,13 +405,13 @@ $(document).ready(function() {
         }
 
         function getSaleItemHTML(itemObj) {
-            var newItem =  '<div item-id="' + itemObj.itemID +'" quantity"' + itemObj.quantity + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
+            var newItem =  '<div item-id="' + itemObj.itemID +'" quantity="' + itemObj.quantity + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
                                 '<div class="thumbnail">' + 
                                     '<img src="' + itemObj.url + '" alt=""/>' +
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn">In Stock: ' + itemObj.quantity + '</a> <a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center"><a class="btn">In Stock: <span class="quantity">' + itemObj.quantity + '</span></a> <a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary buy-btn price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
@@ -415,7 +425,7 @@ $(document).ready(function() {
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> <a class="btn bid-btn">Bid on Item</a> <a class="btn btn-primary price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center"><a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> <a class="btn bid-btn">Bid on Item</a> <a class="btn btn-primary bid-btn price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
@@ -486,7 +496,27 @@ $(document).ready(function() {
             $("#bid-modal-item-name").html(parent.attr('name'));
             $("#bid-modal-item-description").html(parent.attr('description'));
             $("#bid-modal-amount").val((parseFloat(parent.attr('price')) + 1).toFixed(2));
-            $("#bid-modal-show").click();
+            if (currentUser == null) {
+                showSnackBar("You must be logged in to bid on items.");
+            }
+            else {
+                $("#bid-modal-show").click();
+            }
+        });
+
+        $(".buy-btn").click(function() {
+            var parent = $(this).closest(".span3");
+            buyingItem = parent;
+            $("#buy-modal-item-name").html(parent.attr('name'));
+            $("#buy-modal-item-description").html(parent.attr('description'));
+            $("#buy-modal-item-price").html(formatter.format(parent.attr('price')));
+            if (currentUser == null) {
+                showSnackBar("You must be logged in to buy items.");
+            }
+            else {
+                populateCreditCardSelects();
+                $("#buy-modal-show").click();
+            }
         });
 
         $(".cart-btn").click(function() {
@@ -514,52 +544,107 @@ $(document).ready(function() {
     $(".bid-modal-close").click(function() {
         if ($(this).hasClass("btn-success")) {
             //needs post request
-            if (currentUser == null) {
-                $("#bid-modal .close").click();
-                showSnackBar("You must be logged in to bid.");
+            var amount = parseFloat($("#bid-modal-amount").val());
+            var itemID = parseInt(biddingOn.attr('item-id'));
+            var postObj = {
+                "UID": currentUser.UID,
+                "bidAmount": amount,
+                "itemID": itemID
             }
-            else {
-                var amount = parseFloat($("#bid-modal-amount").val());
-                var itemID = parseInt(biddingOn.attr('item-id'));
-                var postObj = {
-                    "UID": currentUser.UID,
-                    "bidAmount": amount,
-                    "itemID": itemID
-                }
-                $.ajax({
-                    url: "https://himalaya431.herokuapp.com/app/bid",
-                    type: "POST",
-                    data: JSON.stringify(postObj),
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Content-Type', 'application/json');
-                    },
-                    crossDomain: true,
-                    success: function(data){
-                        if (data.error) {
-                            $("#bid-modal .close").click();
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/bid",
+                type: "POST",
+                data: JSON.stringify(postObj),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        $("#bid-modal .close").click();
 
-                            showSnackBar(data.error);
-                        }
-                        else {
+                        showSnackBar(data.error);
+                    }
+                    else {
+                        if (data.highestBidder == true) {
                             showSnackBar("You bid $" + $("#bid-modal-amount").val() + " on " + biddingOn.attr('name'));
+                            biddingOn.attr('price', data.newPrice + "");
+                            biddingOn.find(".price-btn").html(formatter.format(data.newPrice));
                             $("#bid-modal input").each(function() {
                                 $(this).val("");
                             })
                             $("#bid-modal .close").click();
                             biddingOn = null;
                         }
-                    },
-                    error: function(error) {
-                        $("#bid-modal .close").click();
-                        showSnackBar("Error bidding on item.");
-                        console.log("ERROR: ");
-                        console.log(error);
+                        else {
+                            showSnackBar("Your bid was not high enough.");
+                        }
                     }
-                });
-            }
+                },
+                error: function(error) {
+                    $("#bid-modal .close").click();
+                    showSnackBar("Error bidding on item.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
         }
         else {
             biddingOn = null;
+        }
+    });
+
+    $(".buy-modal-close").click(function() {
+        if ($(this).hasClass("btn-success")) {
+            var amount = parseFloat($("#buy-modal-amount").val());
+            var itemIDs = [];
+            var card = cards[parseInt($("#buy-modal-select").find(":selected").attr('card-index'))];
+            var cv2 = parseInt($("#buy-modal-cv2").val());
+            itemIDs.push(parseInt(buyingItem.attr('item-id')));
+            var postObj = {
+                "UID": currentUser.UID,
+                "itemIDs": itemIDs,
+                "cardNumber": card.number,
+                "date": card.date,
+                "type": card.type,
+                "cv2": cv2,
+                "destination": "123 Cherry Lane"
+            }
+
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/buy",
+                type: "POST",
+                data: JSON.stringify(postObj),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        showSnackBar(data.error);
+                    }
+                    else {
+                        showSnackBar("You bought " + buyingItem.attr('name') + " for " + formatter.format(parseFloat(buyingItem.attr('price'))));
+                        var tmpQuantity = parseInt(buyingItem.attr('quantity'));
+                        buyingItem.attr('quantity', tmpQuantity - 1);
+                        buyingItem.find(".quantity").html(tmpQuantity - 1);
+                        $("#buy-modal input").each(function() {
+                            $(this).val("");
+                        })
+                        $("#buy-modal .close").click();
+                        buyingItem = null;
+                    }
+                },
+                error: function(error) {
+                    $("#buy-modal .close").click();
+                    showSnackBar("Error bidding on item.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+        }
+        else {
+            buyingItem = null;
         }
     });
 
@@ -764,5 +849,160 @@ $(document).ready(function() {
             showSaleItems = false;
         }
         resetDisplayItems();
+    });
+
+    function populateCreditCardSelects() {
+        $(".credit-card-select").each(function() {
+            $(this).html("");
+        });
+        $.ajax({
+            url: "https:/himalaya431.herokuapp.com/app/getPayments",
+            type: "POST",
+            data: JSON.stringify({"UID": currentUser.UID}),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (data.error) {
+                    showSnackBar(data.error);
+                }
+                else {
+                    cards = data;
+                    var selectHTML = '';
+                    for (var i = 0; i < cards.length; i++) {
+                        selectHTML += '<option card-index="' + i + '">' + cards[i].type + ' - ' + (cards[i].number % 10000) + '</option>';
+                    }
+                    $(".credit-card-select").each(function() {
+                        $(this).html(selectHTML);
+                    });
+                }
+            },
+            error: function(error) {
+                showSnackBar("Error retrieving payment methods.");
+                console.log("ERROR: ");
+                console.log(error);
+            }
+        });
+    }
+
+    function getCartItemHTML(itemObj) {
+        var quantity = 0;
+        for (var i = 0; i < shoppingCart.length; i++) {
+            if (shoppingCart[i].id == itemObj.itemID) {
+                quantity++;
+            }
+        }
+        var html =  '<div class="thumbnail">' + 
+                        '<img class="mycart-img" src="' + itemObj.url + '"></img>' + 
+                        '<div class="caption">' +
+                            '<h4>' + itemObj.name + '</h4>' +
+                            '<div class="left-with-indent">' +
+                                '<h5 style="display: inline">Description:<br><br></h5><span style="padding-left: 30px">' + itemObj.description + '<br></span><br>' +
+                                '<h5 style="display: inline">Quantity:&nbsp;</h5>' +
+                                '<input autocomplete="off" class="mycart-quantity" item-id="' + itemObj.itemID + '" type="number" min="0" value="' + quantity + '"></input><span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+        return html;
+    }
+
+    $(".render-cart").click(function() {
+        var ids = [];
+        for (var i = 0; i < shoppingCart.length; i++) {
+            ids.push(shoppingCart[i].id);
+        }
+        var itemsObj = {
+            "itemIDs": ids
+        };
+        console.log(ids);
+        $.ajax({
+            url: "https://himalaya431.herokuapp.com/app/Items",
+            type: "POST",
+            data: JSON.stringify(itemsObj),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (!data.error) {
+                    console.log(data);
+                    $("#mycart-thumbnails").html("");
+                    for (var i = 0; i < data.saleItems.length; i++) {
+                        $("#mycart-thumbnails").append(getCartItemHTML(data.saleItems[i]));
+                    }
+                }
+            },
+            error: function(error) {
+                console.log("ERROR: ");
+                console.log(error);
+            }
+        });
+    });
+
+    $(".mycart-modal-close").click(function() {
+        if ($(this).hasClass("btn-success")) {
+            
+        }
+    });
+
+    $("#mycart-modal-submit").click(function() {
+        var ids = [];
+
+        if (currentUser == null) {
+            $("#mycart-modal .close").click();
+            showSnackBar("Please login before making a purchase.");
+            return;
+        }
+
+
+        $(".mycart-quantity").each(function() {
+            for (var i = 0; i < $(this).val(); i++) {
+                ids.push(parseInt($(this).attr('item-id')));
+            }
+        });
+
+            var card = cards[parseInt($("#mycart-modal-select").find(":selected").attr('card-index'))];
+            var cv2 = parseInt($("#mycart-modal-cv2").val());
+            var postObj = {
+                "UID": currentUser.UID,
+                "itemIDs": ids,
+                "cardNumber": card.number,
+                "date": card.date,
+                "type": card.type,
+                "cv2": cv2,
+                "destination": "123 Cherry Lane"
+            }
+
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/buy",
+                type: "POST",
+                data: JSON.stringify(postObj),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        console.log(data.error.code);
+                        showSnackBar("Error purchasing items: " + data.error);
+                    }
+                    else {
+                        showSnackBar("Your purchase was successful.");
+                        initializeDisplayItems();
+                        $("#mycart-modal input").each(function() {
+                            $(this).val("");
+                        })
+                        $("#mycart-modal .close").click();
+                    }
+                },
+                error: function(error) {
+                    $("#mycart-modal .close").click();
+                    showSnackBar("Error purchasing items.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+        console.log(ids);
     });
 });
