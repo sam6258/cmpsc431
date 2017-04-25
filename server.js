@@ -143,10 +143,10 @@ router.post('/Items', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]
     }
-    var query = 'SELECT * FROM AuctionItems A, Items I WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ')';
+    var query = 'SELECT I.itemID, I.price, I.description, I.url, I.name, I.location, I.vendorID, AVG(R.rating) as avgRating FROM Items I LEFT JOIN Ratings R ON R.itemID=I.itemID, AuctionItems A WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ') GROUP BY I.itemID';
     connection.query(query, function(err, rows, fields){
         if (!err){
-            var query1 = 'SELECT * FROM SaleItems S, Items I WHERE S.itemID = I.itemID AND I.itemID IN (' + itemIDs + ')';  
+            var query1 = 'SELECT I.itemID, I.price, I.description, I.url, I.name, I.location, I.vendorID, AVG(R.rating) as avgRating FROM Items I LEFT JOIN Ratings R ON R.itemID=I.itemID, SaleItems S WHERE S.itemID=I.itemID AND I.itemID IN (' + itemIDs + ') GROUP BY I.itemID';  
             connection.query(query1, function(err1, rows1, fields1){
                 if (!err1){
                     resultObj = {auctionedItems: rows, saleItems: rows1}; 
