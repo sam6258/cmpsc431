@@ -395,6 +395,17 @@ router.post('/getPurchasedItems', function(req, res){
 
 
 }); 
+router.post('/getRatings', function(req, res){
+    var query = 'SELECT * FROM Ratings WHERE itemID = ' + req.body.itemID; 
+    connection.query(query, function(err, rows, fields){
+        if (!err)
+            res.json(rows); 
+        else
+            res.json({error: "error querying Ratings table"}); 
+        
+    }); 
+}); 
+
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
