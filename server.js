@@ -254,7 +254,7 @@ router.post('/buy', function(req, res){
                                             for (i = 0; i < rows2.length; i++)
                                                 totalSum = totalSum + rows2[i].price; 
                                             var d = new Date(); 
-                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth; 
+                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth(); 
                                             var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
                                             var query3 = 'INSERT INTO Shipments SET ?'; 
                                             connection.query(query3, newShipment, function(err3, res3){
@@ -365,6 +365,35 @@ router.post('/bid', function(req, res){
         }
     
     }); 
+}); 
+router.post('/getPurchasedItems', function(req, res){
+    var query = 'SELECT S.shipID, P.itemID, P.quantity FROM Shipments S, CreditCards C, PurchasedItems P WHERE S.creditCardNumber=C.number AND P.shipID=S.shipID AND C.UID="' + req.body.UID + '"';
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            if (rows.length > 0){
+                var i = 0; 
+                var j = 0; 
+                var resultSet = {}; 
+                for (i = 0; i < rows.length; i++){
+                    var itemsArr = []; 
+                    for(j=0; j < rows.length; j++){
+                        if (rows[i].shipID == rows[j].shipID){
+                            var item = {itemID: rows[j].itemID, quantity: rows[j].quantity};
+                            itemsArr.push(item); 
+                        }
+                    }
+                    resultSet[rows[i].shipID.toString()] = itemsArr; 
+                }
+                res.json(resultSet); 
+            }
+            else
+                res.json({error: "this user has no shipments"}); 
+        }
+        else
+            res.json({error: "error finding info across 3 tables"}); 
+    }); 
+
+
 }); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
