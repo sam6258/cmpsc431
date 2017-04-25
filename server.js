@@ -143,10 +143,10 @@ router.post('/Items', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]
     }
-    var query = 'SELECT * FROM AuctionItems A, Items I WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ')';
+    var query = 'SELECT I.itemID, I.price, I.description, I.url, I.name, I.location, I.vendorID, AVG(R.rating) as avgRating FROM Items I LEFT JOIN Ratings R ON R.itemID=I.itemID, AuctionItems A WHERE A.itemID=I.itemID AND I.itemID IN (' + itemIDs + ') GROUP BY I.itemID';
     connection.query(query, function(err, rows, fields){
         if (!err){
-            var query1 = 'SELECT * FROM SaleItems S, Items I WHERE S.itemID = I.itemID AND I.itemID IN (' + itemIDs + ')';  
+            var query1 = 'SELECT I.itemID, I.price, I.description, I.url, I.name, I.location, I.vendorID, AVG(R.rating) as avgRating FROM Items I LEFT JOIN Ratings R ON R.itemID=I.itemID, SaleItems S WHERE S.itemID=I.itemID AND I.itemID IN (' + itemIDs + ') GROUP BY I.itemID';  
             connection.query(query1, function(err1, rows1, fields1){
                 if (!err1){
                     resultObj = {auctionedItems: rows, saleItems: rows1}; 
@@ -254,7 +254,7 @@ router.post('/buy', function(req, res){
                                             for (i = 0; i < rows2.length; i++)
                                                 totalSum = totalSum + rows2[i].price; 
                                             var d = new Date(); 
-                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth; 
+                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth(); 
                                             var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
                                             var query3 = 'INSERT INTO Shipments SET ?'; 
                                             connection.query(query3, newShipment, function(err3, res3){
@@ -364,6 +364,63 @@ router.post('/bid', function(req, res){
                 res.json({error: "item doesn't exist"}); 
         }
     
+    }); 
+}); 
+router.post('/getPurchasedItems', function(req, res){
+    var query = 'SELECT S.shipID, P.itemID, P.quantity, I.description, I.vendorID, I.price, I.location, I.url, I.name FROM Shipments S, CreditCards C, PurchasedItems P, Items I WHERE S.creditCardNumber=C.number AND P.shipID=S.shipID AND C.UID="' + req.body.UID + '" AND I.itemID=P.itemID';
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            if (rows.length > 0){
+                var i = 0; 
+                var j = 0; 
+                var resultSet = {}; 
+                for (i = 0; i < rows.length; i++){
+                    var itemsArr = []; 
+                    for(j=0; j < rows.length; j++){
+                        if (rows[i].shipID == rows[j].shipID){
+                            var item = {itemID: rows[j].itemID, quantity: rows[j].quantity, description: rows[j].description, vendorID: rows[j].vendorID, price: rows[j].price, location: rows[j].location, url: rows[j].url, name: rows[j].name};
+                            itemsArr.push(item); 
+                        }
+                    }
+                    resultSet[rows[i].shipID.toString()] = itemsArr; 
+                }
+                res.json(resultSet); 
+            }
+            else
+                res.json({error: "this user has no shipments"}); 
+        }
+        else
+            res.json({error: "error finding info across 3 tables"}); 
+    }); 
+
+
+}); 
+router.post('/getRatings', function(req, res){
+    var query = 'SELECT * FROM Ratings WHERE itemID = ' + req.body.itemID; 
+    connection.query(query, function(err, rows, fields){
+        if (!err)
+            res.json(rows); 
+        else
+            res.json({error: "error querying Ratings table"}); 
+        
+    }); 
+}); 
+router.post('/addRating', function(req, res){
+    var query = 'INSERT INTO Ratings SET ?'; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            var query1 = 'SELECT AVG(R.rating) as avgRating FROM Ratings R WHERE itemID=' + req.body.itemID; 
+            connection.query(query1, function(err1, rows, fields){
+                if (!err1){
+                    var result = {newAvgRating: rows[0].avgRating}
+                    res.json(result); 
+                }
+                else
+                    res.json({error: "error getting new average rating for item"}); 
+            }); 
+        }
+        else
+            res.json({error: "error inserting into Ratings table"}); 
     }); 
 }); 
 router.post('/Item', function(req, res){
