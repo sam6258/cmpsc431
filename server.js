@@ -405,7 +405,24 @@ router.post('/getRatings', function(req, res){
         
     }); 
 }); 
-
+router.post('/addRating', function(req, res){
+    var query = 'INSERT INTO Ratings SET ?'; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            var query1 = 'SELECT AVG(R.rating) as avgRating FROM Ratings R WHERE itemID=' + req.body.itemID; 
+            connection.query(query1, function(err1, rows, fields){
+                if (!err1){
+                    var result = {newAvgRating: rows[0].avgRating}
+                    res.json(result); 
+                }
+                else
+                    res.json({error: "error getting new average rating for item"}); 
+            }); 
+        }
+        else
+            res.json({error: "error inserting into Ratings table"}); 
+    }); 
+}); 
 router.post('/Item', function(req, res){
     var query = "INSERT INTO Items SET ?"; 
     var itemData = {"vendorID": req.body.vendorID, "price": req.body.price, "location": req.body.location, "description": req.body.description, "url": req.body.url, "name": req.body.name};
