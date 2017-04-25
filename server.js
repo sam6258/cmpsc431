@@ -367,7 +367,7 @@ router.post('/bid', function(req, res){
     }); 
 }); 
 router.post('/getPurchasedItems', function(req, res){
-    var query = 'SELECT S.shipID, P.itemID, P.quantity FROM Shipments S, CreditCards C, PurchasedItems P WHERE S.creditCardNumber=C.number AND P.shipID=S.shipID AND C.UID="' + req.body.UID + '"';
+    var query = 'SELECT S.shipID, P.itemID, P.quantity, I.description, I.vendorID, I.price, I.location, I.url, I.name FROM Shipments S, CreditCards C, PurchasedItems P, Items I WHERE S.creditCardNumber=C.number AND P.shipID=S.shipID AND C.UID="' + req.body.UID + '" AND I.itemID=P.itemID';
     connection.query(query, function(err, rows, fields){
         if (!err){
             if (rows.length > 0){
@@ -378,7 +378,7 @@ router.post('/getPurchasedItems', function(req, res){
                     var itemsArr = []; 
                     for(j=0; j < rows.length; j++){
                         if (rows[i].shipID == rows[j].shipID){
-                            var item = {itemID: rows[j].itemID, quantity: rows[j].quantity};
+                            var item = {itemID: rows[j].itemID, quantity: rows[j].quantity, description: rows[j].description, vendorID: rows[j].vendorID, price: rows[j].price, location: rows[j].location, url: rows[j].url, name: rows[j].name};
                             itemsArr.push(item); 
                         }
                     }
