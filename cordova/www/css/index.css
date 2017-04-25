@@ -107,3 +107,7 @@ However, delay the fade out process for 2.5 seconds */
 .mycart-img {
   max-height: 200px;
 }
+
+.brand {
+  color: white !important;
+}
