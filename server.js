@@ -658,6 +658,26 @@ router.post('/buy', function(req, res){
     }); 
 
 }); 
+router.post('/browsedItem', function(req, res){
+    var query = 'INSERT INTO BrowsingHistory SET ?'; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            res.json(req.body); 
+        }
+        else
+            res.json({error: "error inserting into BrowsingHistory table"}); 
+    }); 
+}); 
+router.post('/getBrowsed', function(req, res){
+    var query = 'SELECT * FROM BrowsingHistory WHERE UID="' + req.body.UID + '"'; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            res.json(rows); 
+        }
+        else
+            res.json({error: "error querying BrowsingHistory table"}); 
+    }); 
+}); 
 router.post('/bid', function(req, res){
     var query = 'SELECT * FROM Items WHERE itemID = ' + req.body.itemID; 
     connection.query(query, function(err, rows, fields){
