@@ -97,11 +97,10 @@ However, delay the fade out process for 2.5 seconds */
   font-size: 130%;
 }
 
-.mycart-quantity {
+.mycart-quantity, #ratings-modal-rating {
   width: 30px;
-  padding-top: .1em !important;
+  padding-top: .15em !important;
   padding-bottom: .1em !important;
-  margin: 0px;
 }
 
 .mycart-img {
@@ -110,4 +109,17 @@ However, delay the fade out process for 2.5 seconds */
 
 .brand {
   color: white !important;
+}
+
+.icon-star {
+  height: 1em;
+  width: 1em;
+}
+
+.rating {
+  color: rgb(235,187,0);
+}
+
+#ratings-modal-description {
+  width: 95%;
 }

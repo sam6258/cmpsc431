@@ -24,6 +24,7 @@ $(document).ready(function() {
                   minimumFractionDigits: 2,
                 });
     var cards = [];
+    var ratingItem = null;
 
     $(".vendor-element").hide();
     $("#signout").hide();
@@ -417,7 +418,12 @@ $(document).ready(function() {
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn">In Stock: <span class="quantity">' + itemObj.quantity + '</span></a> <a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> <a class="btn btn-primary buy-btn price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center">' + 
+                                            '<a class="btn">In Stock: <span class="quantity">' + itemObj.quantity + '</span></a> ' + 
+                                            '<a class="btn cart-btn">Add to <i class="icon-shopping-cart"></i></a> ' +
+                                            '<a class="btn btn-primary buy-btn price-btn">' + formatter.format(itemObj.price) + '</a> ' +
+                                            '<a class="btn render-ratings" href="#ratings-modal" data-toggle="modal"><span class="rating">' + (itemObj.avgRating == null ? "" : itemObj.avgRating.toFixed(1)) + '</span> <img class="icon-star" src="img/star.png"></img></a>' +
+                                        '</h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
@@ -431,19 +437,25 @@ $(document).ready(function() {
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
-                                        '<h4 style="text-align:center"><a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> <a class="btn bid-btn">Bid on Item</a> <a class="btn btn-primary bid-btn price-btn">' + formatter.format(itemObj.price) + '</a></h4>' + 
+                                        '<h4 style="text-align:center">' + 
+                                            '<a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> ' +
+                                            '<a class="btn btn-primary bid-btn price-btn">' + formatter.format(itemObj.price) + '</a> ' + 
+                                            '<a class="btn bid-btn">Bid on Item</a> ' + 
+                                        '</h4>' + 
                                     '</div>' + 
                                 '</div>' +
                             '</div>';
-                            convertTimeStamp(itemObj.endTime);
             return newItem;
         }
 
         function convertTimeStamp(stamp) {
-            var t = stamp.split(/[- T : \.]/);
-            var d = new Date(stamp);
+            if (stamp) {
+                var t = stamp.split(/[- T : \.]/);
+                var d = new Date(stamp);
 
-            return (d.getMonth() + 1) + "/" + d.getDay() + "/" + (d.getFullYear() + "").slice(2, 4) + " " + getDateString (d);
+                return (d.getMonth() + 1) + "/" + d.getDay() + "/" + (d.getFullYear() + "").slice(2, 4) + " " + getDateString (d);
+            }
+            return null;
             function getDateString (date) {
                 var hours = date.getHours();
                 var minutes = date.getMinutes();
@@ -560,6 +572,49 @@ $(document).ready(function() {
             console.log(shoppingCart);
             showSnackBar("Item has been added to your cart.");
         });
+
+        $(".render-ratings").click(function() {
+            ratingItem = $(this.closest(".span3"));
+            $("#ratings-modal-item-name").html(ratingItem.attr('name'));
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/getRatings",
+                type: "POST",
+                data: JSON.stringify({"itemID": parseInt(ratingItem.attr('item-id'))}),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (!data.error) {
+                        console.log(data);
+
+
+                        $("#ratings-thumbnails").html("");
+                        if(data.length == 0) {
+                            $("#ratings-thumbnails").html("This item has no ratings.");
+                        }
+                        for (var i = 0; i < data.length; i++) {
+                            $("#ratings-thumbnails").append(getRatingHTML(data[i]));
+                        }
+                    }
+                },
+                error: function(error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+        });
+
+        function getRatingHTML(ratingObj) {
+            var html =  '<div class="thumbnail">' +
+                            '<div class="left-with-indent">' +
+                                '<h5 style="display: inline;">' + ratingObj.UID + ' - ' + ratingObj.rating + ' Stars<br><br></h5>' +
+                                '<span style="padding-left:30px">' + ratingObj.description + '<br><br></span>' +
+                            '</div>' +
+                        '</div>';
+
+            return html;
+        }
     }
 
     $(".bid-modal-close").click(function() {
@@ -1049,6 +1104,56 @@ $(document).ready(function() {
                 }
             });
         console.log(ids);
+    });
+
+    $("#ratings-modal-submit").click(function() {
+        if (currentUser == null) {
+            $("#ratings-modal .close").click();
+            showSnackBar("Please login before making a rating.");
+            return;
+        }   
+        
+
+        var postObj = {
+            "UID": currentUser.UID,
+            "itemID": ratingItem.attr('item-id'),
+            "description": $("#ratings-modal-description").val(),
+            "rating": parseInt($("#ratings-modal-rating").val())
+        };
+
+
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/addRating",
+                type: "POST",
+                data: JSON.stringify(postObj),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        console.log(data.error.code);
+                        showSnackBar("Error rating item: " + data.error);
+                    }
+                    else {
+                        showSnackBar("Your rating was posted.");
+                        initializeDisplayItems();
+                        $("#ratings-modal input").each(function() {
+                            $(this).val("");
+                        })
+                        $("#ratings-modal textarea").each(function() {
+                            $(this).val("");
+                        })
+                        $("#ratings-modal .close").click();
+                    }
+                },
+                error: function(error) {
+                    $("#ratings-modal .close").click();
+                    showSnackBar("Error rating items.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
     });
 
     $("#signout").click(function() {
