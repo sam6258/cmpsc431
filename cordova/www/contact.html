@@ -233,6 +233,7 @@
 			<form class="form-horizontal loginFrm">
 			  <div class="control-group">								
 				Please enter a bid for item:<br>
+				<img id="bid-modal-img"></img>
 				<b><span id="bid-modal-item-name"></span></b><br>
 				<span id="bid-modal-item-description"></span>
 			  </div>
@@ -254,17 +255,14 @@
 			<h3>Buy Item</h3>
 		  </div>
 		  <div class="modal-body">
-			<form class="form-horizontal loginFrm">
-			  <div class="control-group">								
-				Please confirm purchase for item:<br>
-				<b><span id="buy-modal-item-name"></span></b><br>
-				<span id="buy-modal-item-description"></span><br>
-				<b><span id="buy-modal-item-price"></span></b><br>
-				<input autocomplete="off" type="text" id="buy-modal-cv2" placeholder="CV2 - 123">
-				<select id="buy-modal-select" class="credit-card-select">
-				</select> 
-			  </div>
-			</form>		
+			Please confirm purchase for item:<br><br>
+			<img id="buy-modal-img"></img>
+			<b><span id="buy-modal-item-name"></span></b><br><br>
+			<span id="buy-modal-item-description"></span><br><br>
+			<b><span id="buy-modal-item-price"></span></b><br><br>
+			<input autocomplete="off" type="text" id="buy-modal-cv2" placeholder="CV2 - 123">
+			<select id="buy-modal-select" class="credit-card-select">
+			</select> 
 		  </div>
 		  <div class="modal-footer">
 			<button id="buy-modal-submit" type="submit" class="btn btn-success buy-modal-close">Confirm Purchase</button>

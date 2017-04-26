@@ -414,7 +414,7 @@ $(document).ready(function() {
         function getSaleItemHTML(itemObj) {
             var newItem =  '<div item-id="' + itemObj.itemID +'" quantity="' + itemObj.quantity + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
                                 '<div class="thumbnail">' + 
-                                    '<img src="' + itemObj.url + '" alt=""/>' +
+                                    '<img style="cursor: pointer" class="buy-btn" src="' + itemObj.url + '" alt=""/>' +
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
@@ -433,12 +433,12 @@ $(document).ready(function() {
         function getAuctionItemHTML(itemObj) {
             var newItem =  '<div item-id="' + itemObj.itemID +'" reserve-price="' + itemObj.reservePrice + '" price="' + itemObj.price + '" name="' + itemObj.name + '" description="' + itemObj.description + '" class="span3">' + 
                                 '<div class="thumbnail">' + 
-                                    '<img src="' + itemObj.url + '" alt=""/>' +
+                                    '<img style="cursor: pointer" class="bid-btn" src="' + itemObj.url + '" alt=""/>' +
                                     '<div class="caption">' +
                                         '<h5>' + itemObj.name + '</h5>' +
                                         '<p>' + itemObj.description + '</p>' + 
                                         '<h4 style="text-align:center">' + 
-                                            '<a class="btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> ' +
+                                            '<a class="btn bid-btn">Auction End: ' + convertTimeStamp(itemObj.endTime) + '</a> ' +
                                             '<a class="btn btn-primary bid-btn price-btn">' + formatter.format(itemObj.price) + '</a> ' + 
                                             '<a class="btn bid-btn">Bid on Item</a> ' + 
                                         '</h4>' + 
@@ -512,6 +512,7 @@ $(document).ready(function() {
             var parent = $(this).closest(".span3");
             biddingOn = parent;
             $("#bid-modal-item-name").html(parent.attr('name'));
+            $("#bid-modal-img").attr("src", parent.find('img').attr('src'));
             $("#bid-modal-item-description").html(parent.attr('description'));
             $("#bid-modal-amount").val((parseFloat(parent.attr('price')) + 1).toFixed(2));
             if (currentUser == null) {
@@ -526,6 +527,7 @@ $(document).ready(function() {
             var parent = $(this).closest(".span3");
             buyingItem = parent;
             $("#buy-modal-item-name").html(parent.attr('name'));
+            $("#buy-modal-img").attr("src", parent.find('img').attr('src'));
             $("#buy-modal-item-description").html(parent.attr('description'));
             $("#buy-modal-item-price").html(formatter.format(parent.attr('price')));
             if (currentUser == null) {
@@ -676,6 +678,7 @@ $(document).ready(function() {
             var itemIDs = [];
             var card = cards[parseInt($("#buy-modal-select").find(":selected").attr('card-index'))];
             var cv2 = parseInt($("#buy-modal-cv2").val());
+            var dest = $("#buy-modal-dest").val();
             itemIDs.push({"id": parseInt(buyingItem.attr('item-id')), "quantity": 1});
             var postObj = {
                 "UID": currentUser.UID,
@@ -684,7 +687,7 @@ $(document).ready(function() {
                 "date": card.date,
                 "type": card.type,
                 "cv2": cv2,
-                "destination": "123 Cherry Lane"
+                "destination": dest
             }
 
             $.ajax({
@@ -975,8 +978,9 @@ $(document).ready(function() {
                 quantity = shoppingCart[i].quantity;
             }
         }
-        var html =  '<div class="thumbnail">' + 
-                        '<img class="mycart-img" src="' + itemObj.url + '"></img>' + 
+
+        var html =  '<div class="thumbnail">' +
+                        '<img class="mycart-img" src="' + itemObj.url + '"></img>' +
                         '<div class="caption">' +
                             '<h4>' + itemObj.name + '</h4>' +
                             '<div class="left-with-indent">' +
@@ -1041,6 +1045,58 @@ $(document).ready(function() {
         });
     });
 
+    function getOrderHTML(orders) {
+        var html = '';
+        var count = 0;
+        for (var key in orders) {
+            if (!orders.hasOwnProperty(key)) continue;
+            count++;
+            html +=' <div class="thumbnail">' + 
+                        '<div class="left-with-indent">' +
+                            '<h5 style="display: inline;"> Tracking #' + key + ' </h5>';
+            for (var i = 0; i < orders[key].length; i++) {
+                html += '<div class="thumbnail">' +
+                            '<div class="caption">' +
+                                '<h6>' + orders[key][i].name + '</h6>' +
+                                '<div class="left-with-indent">' +
+                                    '<h6 style="display: inline">Description:<br><br></h6><span style="padding-left: 30px">' + orders[key][i].description + '<br></span><br>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+            }
+
+            html +=     '</div>' +
+                    '</div>';
+        }
+        if (count == 0) {
+            html = "You have no orders.";
+        }
+        return html;
+    }
+
+    $(".render-orders").click(function() {
+        $.ajax({
+            url: "https://himalaya431.herokuapp.com/app/getPurchasedItems",
+            type: "POST",
+            data: JSON.stringify({"UID": currentUser.UID}),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (!data.error) {
+                    console.log(data);
+                    $("#order-history-thumbnails").html("");
+                    $("#order-history-thumbnails").append(getOrderHTML(data));
+                }
+            },
+            error: function(error) {
+                console.log("ERROR: ");
+                console.log(error);
+            }
+        });
+    });
+
     $(".mycart-modal-close").click(function() {
         if ($(this).hasClass("btn-success")) {
             
@@ -1063,6 +1119,7 @@ $(document).ready(function() {
 
             var card = cards[parseInt($("#mycart-modal-select").find(":selected").attr('card-index'))];
             var cv2 = parseInt($("#mycart-modal-cv2").val());
+            var dest = $("#mycart-modal-dest").val();
             var postObj = {
                 "UID": currentUser.UID,
                 "itemIDs": ids,
@@ -1070,7 +1127,7 @@ $(document).ready(function() {
                 "date": card.date,
                 "type": card.type,
                 "cv2": cv2,
-                "destination": "123 Cherry Lane"
+                "destination": dest
             }
 
             $.ajax({
@@ -1144,6 +1201,7 @@ $(document).ready(function() {
                         $("#ratings-modal textarea").each(function() {
                             $(this).val("");
                         })
+                        $("#ratings-modal-rating").val("3");
                         $("#ratings-modal .close").click();
                     }
                 },

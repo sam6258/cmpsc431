@@ -103,7 +103,7 @@ However, delay the fade out process for 2.5 seconds */
   padding-bottom: .1em !important;
 }
 
-.mycart-img {
+.mycart-img, #bid-modal-img, #buy-modal-img {
   max-height: 200px;
 }
 
@@ -122,4 +122,13 @@ However, delay the fade out process for 2.5 seconds */
 
 #ratings-modal-description {
   width: 95%;
+}
+
+#buy-modal, #bid-modal {
+  line-height: normal;
+}
+
+#bid-modal-amount {
+  width: 50px;
+  text-align: center;
 }
