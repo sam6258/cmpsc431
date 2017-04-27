@@ -6,6 +6,13 @@
   .span3 {
     margin-left: auto;
   }
+  .recommended-item-img {
+    height: 200px;
+    margin-bottom: 20px;
+  }
+  .item .span6:nth-child(2) {
+    display: none;
+  }
 }
 
 a {
