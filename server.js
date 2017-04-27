@@ -158,6 +158,10 @@ router.post('/Items', function(req, res){
             res.json({error: "error with items table query"}); 
     });
 });
+//router.post('/browsedItem', function(req, res){
+//    var query = 'INSERT INTO 
+//}); 
+
 router.get('/Items', function(req, res){
     var query = "SELECT * FROM AuctionItems"; 
     connection.query(query, function(err, rows, fields){
@@ -226,91 +230,474 @@ router.post('/buy', function(req, res){
         else
             itemIDs = itemIDs + req.body.itemIDs[i]["id"]
     }    
-    var query = 'SELECT * FROM SaleItems WHERE itemID IN (' + itemIDs + ')'; 
-    connection.query(query, function(err, rows, fields){
-        if (!err){
-            var inStock = 1; 
-            var i = 0; 
-            var totalSum = 0;
-            if (rows.length != req.body.itemIDs.length)
-                res.json({error:"at least one item you are purchasing does not exist in SaleItems table"});
-            else
-                for (i = 0; i < rows.length; i++){
-                    if ((rows[i].quantity - req.body.itemIDs[i]["quantity"]) < 0)
-                        inStock = 0;
-                } 
-                if (inStock == 0)
-                    res.json({error: "one or more of the items you have purchased exceeds the quantity that exists for the item"});
-                else{
-                    var query1 = 'SELECT * FROM CreditCards WHERE number = ' + req.body.cardNumber; 
-                    connection.query(query1, function(err1, rows1, fields1){
-                        if (!err1){
-                            if (rows1.length > 0)
-                            {
-                                if (rows1[0].number == req.body.cardNumber && rows1[0].UID == req.body.UID && rows1[0].type == req.body.type && rows1[0].date == req.body.date && rows1[0].cv2 == req.body.cv2){
-                                    var query2 = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')'; 
-                                    connection.query(query2, function(err2, rows2, fields2){
-                                        if (!err2){
-                                            for (i = 0; i < rows2.length; i++)
-                                                totalSum = totalSum + rows2[i].price; 
-                                            var d = new Date(); 
-                                            var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth(); 
-                                            var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
-                                            var query3 = 'INSERT INTO Shipments SET ?'; 
-                                            connection.query(query3, newShipment, function(err3, res3){
-                                                if (!err3){
-                                                    var i = 0; 
-                                                    async.whilst(function () {
-                                                      return i < req.body.itemIDs.length;
-                                                    },
-                                                    function (next) {
-                                                        var purchasedItem = {shipID: res3.insertId, itemID: req.body.itemIDs[i]["id"], quantity: req.body.itemIDs[i]["quantity"], location: req.body.location};
-                                                        var query4 = 'INSERT INTO PurchasedItems SET ?'; 
-                                                        connection.query(query4, purchasedItem, function(err4, res4){
-                                                            if (!err4){
-                                                                var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
-                                                                connection.query(query5, function(err5, rows3, fields3){
-                                                                    if (!err5){
-                                                                        i++; 
-                                                                        next(); 
-                                                                    }
-                                                                    else
-                                                                        next(err5);  
-                                                                }); 
+    
+    var query0 = 'SELECT * FROM Shipments WHERE creditCardNumber=' + req.body.cardNumber + ' AND shipDate IS NULL AND destination="' + req.body.destination + '"'; 
+    connection.query(query0, function(err0, rows0, fields0){
+        if (!err0){
+            if (rows0.length > 0){
+                var query = 'SELECT * FROM SaleItems WHERE itemID IN (' + itemIDs + ')'; 
+                connection.query(query, function(err, rows, fields){
+                    if (!err){
+                        var inStock = 1; 
+                        var i = 0; 
+                        var totalSum = 0;
+                        if (rows.length != req.body.itemIDs.length)
+                            res.json({error:"at least one item you are purchasing does not exist in SaleItems table"});
+                        else{
+                                var query1 = 'SELECT * FROM CreditCards WHERE number = ' + req.body.cardNumber; 
+                                connection.query(query1, function(err1, rows1, fields1){
+                                    if (!err1){
+                                        if (rows1.length > 0)
+                                        {
+                                            if (rows1[0].number == req.body.cardNumber && rows1[0].UID == req.body.UID && rows1[0].type == req.body.type && rows1[0].date == req.body.date && rows1[0].cv2 == req.body.cv2){
+                                                var query2 = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')'; 
+                                                connection.query(query2, function(err2, rows2, fields2){
+                                                    if (!err2){
+                                                        var totalSum = 0; 
+                                                        for (i = 0; i < rows2.length; i++){
+                                                            smallSum = 0; 
+                                                            for(j = 0; j < req.body.itemIDs.length; j++){
+                                                                if (rows2[i].itemID == req.body.itemIDs[j].id)
+                                                                    smallSum = rows2[i].price*req.body.itemIDs[j].quantity; 
+                                                            }
+                                                            totalSum += smallSum; 
+                                                        } 
+                                                        var d = new Date(); 
+                                                        var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth(); 
+                                                        var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
+                                                        var query3 = 'UPDATE Shipments SET totalCost = totalCost + ' + totalSum + ' WHERE shipID=' + rows0[0].shipID; 
+                                                        connection.query(query3, function(err3, rows10, fields10){
+                                                            if (!err3){
+                                                                var i = 0; 
+                                                                async.whilst(function () {
+                                                                  return i < req.body.itemIDs.length;
+                                                                },
+                                                                function (next) {
+                                                                    var query11 = 'SELECT * FROM PurchasedItems WHERE shipID=' + rows0[0].shipID + ' AND itemID=' + req.body.itemIDs[i]["id"]; 
+                                                                    connection.query(query11, function(err11, rows11, fields11){
+                                                                        if (!err11){
+                                                                            if (rows11.length > 0){
+                                                                                var query22 = 'UPDATE PurchasedItems SET quantity = quantity + ' + req.body.itemIDs[i]["quantity"] + ' WHERE shipID=' + rows0[0].shipID + ' AND itemID=' + req.body.itemIDs[i]["id"];
+                                                                                connection.query(query22, function(err22, rows22, fields22){
+                                                                                    if (!err22){
+                                                                                        var query55 = 'SELECT * FROM SaleItems WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                        connection.query(query55, function(err55, rows55, fields55){
+                                                                                            if (!err55){
+                                                                                                if (rows55.length > 0){
+                                                                                                    if (rows55[0].quantity - req.body.itemIDs[i]["quantity"] < 0){
+                                                                                                        var query66 = 'UPDATE SaleItems SET quantity = 0 WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query66, function(err66, rows66, fields66){
+                                                                                                            if (!err66){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err66);  
+                                                                                                        });                                                                                                            
+                                                                                                    
+                                                                                                    }
+                                                                                                    else{
+                                                                                                        var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query5, function(err5, rows3, fields3){
+                                                                                                            if (!err5){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err5);  
+                                                                                                        });                                                                                                     
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        });                                                                                        
+                                                                                    }
+                                                                                    else
+                                                                                        next(err22); 
+                                                                                
+                                                                                }); 
+                                                                            }
+                                                                            else{
+                                                                                var purchasedItem = {shipID: rows0[0].shipID, itemID: req.body.itemIDs[i]["id"], quantity: req.body.itemIDs[i]["quantity"], location: req.body.location};
+                                                                                var query4 = 'INSERT INTO PurchasedItems SET ?'; 
+                                                                                connection.query(query4, purchasedItem, function(err4, res4){
+                                                                                    if (!err4){
+                                                                                        var query55 = 'SELECT * FROM SaleItems WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                        console.log(query55); 
+                                                                                        connection.query(query55, function(err55, rows55, fields55){
+                                                                                            if (!err55){
+                                                                                                if (rows55.length > 0){
+                                                                                                    console.log(rows55[0].quantity); 
+                                                                                                    console.log(req.body.itemIDs[i]["quantity"]); 
+                                                                                                    if (rows55[0].quantity - req.body.itemIDs[i]["quantity"] < 0){
+                                                                                                        var query66 = 'UPDATE SaleItems SET quantity = 0 WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query66, function(err66, rows66, fields66){
+                                                                                                            if (!err66){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err66);  
+                                                                                                        });                                                                                                            
+                                                                                                    
+                                                                                                    }
+                                                                                                    else{
+                                                                                                        var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query5, function(err5, rows3, fields3){
+                                                                                                            if (!err5){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err5);  
+                                                                                                        });                                                                                                     
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        });                                                                                        
+                                                                                    }
+                                                                                    else
+                                                                                        next(err4); 
+                                                                                });                                                                                 
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                            next(err11); 
+                                                                    }); 
+                                                                },
+                                                                function (err) {
+                                                                    if(err) 
+                                                                        res.json({error: err}); 
+                                                                    else{
+                                                                        var i = 0;
+                                                                        var orderBool = 0; 
+                                                                        async.whilst(function () {
+                                                                          return i < rows.length;
+                                                                        },
+                                                                        function (next) {
+                                                                            if ((rows[i].quantity - req.body.itemIDs[i]["quantity"]) < 0){
+                                                                                var orderQuantity = Math.abs(rows[i].quantity - req.body.itemIDs[i]["quantity"]);
+                                                                                var query00 = 'SELECT * FROM Orders WHERE UID="' + req.body.UID + '" AND itemID=' + req.body.itemIDs[i]["id"]; 
+                                                                                connection.query(query00, function(err00, rows00, fields00){
+                                                                                    if (!err00){
+                                                                                        if (rows00.length > 0){
+                                                                                            var query10 = 'UPDATE Orders SET quantity = quantity + ' + orderQuantity + ' WHERE UID="' + req.body.UID + '" AND itemID=' + req.body.itemIDs[i]["id"];
+                                                                                            connection.query(query10, function(err10, rows10, fields10){
+                                                                                                if (!err10){
+                                                                                                    i++;
+                                                                                                    orderBool = 1; 
+                                                                                                    next(); 
+                                                                                                }
+                                                                                                else
+                                                                                                    next(err10); 
+                                                                                            }); 
+                                                                                        }
+                                                                                        else{
+                                                                                            var query12 = 'INSERT INTO Orders SET ?'; 
+                                                                                            var newOrder = {UID: req.body.UID, itemID: req.body.itemIDs[i]["id"], quantity: orderQuantity};
+                                                                                            connection.query(query12, newOrder, function(err12, res12){
+                                                                                                if (!err12){
+                                                                                                    i++;
+                                                                                                    orderBool = 1; 
+                                                                                                    next();  
+                                                                                                }
+                                                                                                else
+                                                                                                    next(err12); 
+                                                                                            }); 
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                        next(err00); 
+                                                                                }); 
+                                                                            }
+                                                                            else{
+                                                                                i++;
+                                                                                next(); 
+                                                                            }
+                                                                        },
+                                                                        function (err) {
+                                                                            if(err) {
+                                                                                res.json({error: err}); 
+                                                                            }
+                                                                            else{
+                                                                                if (orderBool == 1)
+                                                                                    res.json({error: "Orders have been placed for out of stock items"}); 
+                                                                                else{
+                                                                                    console.log(orderBool); 
+                                                                                    res.json({success: true});
+                                                                                }
+                                                                            }
+                                                                                
+                                                                        });                                                                    
+                                                                    } 
+                                                                });                                                 
                                                             }
                                                             else
-                                                                next(err4); 
+                                                                res.json({error: "error when updating Shipments table"}); 
                                                         }); 
-                                                    },
-                                                    function (err) {
-                                                        if(err) 
-                                                            res.json({error: err}); 
-                                                        else
-                                                            res.json({success: true}); 
-                                                    });                                                 
-                                                }
-                                                else
-                                                    res.json({error: "error when inserting into Shipments"}); 
-                                            }); 
+                                                    }
+                                                    else
+                                                        res.json({error: "error selecting items from Items table"}); 
+                                                }); 
+
+                                            }
+                                            else
+                                                res.json({error: "credit card info incorrect"}); 
                                         }
                                         else
-                                            res.json({error: "error selecting items from Items table"}); 
-                                    }); 
-
-                                }
-                                else
-                                    res.json({error: "credit card info incorrect"}); 
+                                            res.json({error: "credit card does not exist on file"}); 
+                                    }
+                                    else
+                                        res.json({error: "error when querying CreditCards table"}); 
+                                });
                             }
-                            else
-                                res.json({error: "credit card does not exist on file"}); 
-                        }
-                        else
-                            res.json({error: "error when querying CreditCards table"}); 
-                    });
-                }
+                    }
+                    else
+                        res.json({error: "error finding items in SaleItems table"}); 
+                });                 
+            }
+            else{    
+                var query = 'SELECT * FROM SaleItems WHERE itemID IN (' + itemIDs + ')'; 
+                connection.query(query, function(err, rows, fields){
+                    if (!err){
+                        var inStock = 1; 
+                        var i = 0; 
+                        var totalSum = 0;
+                        if (rows.length != req.body.itemIDs.length)
+                            res.json({error:"at least one item you are purchasing does not exist in SaleItems table"});
+                        else{
+                                var query1 = 'SELECT * FROM CreditCards WHERE number = ' + req.body.cardNumber; 
+                                connection.query(query1, function(err1, rows1, fields1){
+                                    if (!err1){
+                                        if (rows1.length > 0)
+                                        {
+                                            if (rows1[0].number == req.body.cardNumber && rows1[0].UID == req.body.UID && rows1[0].type == req.body.type && rows1[0].date == req.body.date && rows1[0].cv2 == req.body.cv2){
+                                                var query2 = 'SELECT * FROM Items WHERE itemID IN (' + itemIDs + ')'; 
+                                                connection.query(query2, function(err2, rows2, fields2){
+                                                    if (!err2){
+                                                        var totalSum = 0; 
+                                                        for (i = 0; i < rows2.length; i++){
+                                                            smallSum = 0; 
+                                                            for(j = 0; j < req.body.itemIDs.length; j++){
+                                                                if (rows2[i].itemID == req.body.itemIDs[j].id)
+                                                                    smallSum = rows2[i].price*req.body.itemIDs[j].quantity; 
+                                                            }
+                                                            totalSum += smallSum; 
+                                                        }
+                                                        var d = new Date(); 
+                                                        var currDate = '' + d.getFullYear() + '-' + d.getDate() + '-' + d.getMonth(); 
+                                                        var newShipment = {creditCardNumber: req.body.cardNumber, destination: req.body.destination, status: "created", totalCost: totalSum, purchaseDate: currDate};
+                                                        var query3 = 'INSERT INTO Shipments SET ?'; 
+                                                        connection.query(query3, newShipment, function(err3, res3){
+                                                            if (!err3){
+                                                                var i = 0; 
+                                                                async.whilst(function () {
+                                                                  return i < req.body.itemIDs.length;
+                                                                },
+                                                                function (next) {
+                                                                    var query11 = 'SELECT * FROM PurchasedItems WHERE shipID=' + res3.insertId + ' AND itemID=' + req.body.itemIDs[i]["id"]; 
+                                                                    connection.query(query11, function(err11, rows11, fields11){
+                                                                        if (!err11){
+                                                                            if (rows11.length > 0){
+                                                                                var query22 = 'UPDATE PurchasedItems SET quantity = quantity + ' + req.body.itemIDs[i]["quantity"] + ' WHERE shipID=' + res3.insertId + ' AND itemID=' + req.body.itemIDs[i]["id"];
+                                                                                connection.query(query22, function(err22, rows22, fields22){
+                                                                                    if (!err22){
+                                                                                        var query55 = 'SELECT * FROM SaleItems WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                        console.log(query55); 
+                                                                                        connection.query(query55, function(err55, rows55, fields55){
+                                                                                            if (!err55){
+                                                                                                if (rows55.length > 0){
+                                                                                                    console.log(rows55[0].quantity); 
+                                                                                                    console.log(req.body.itemIDs[i]["quantity"]); 
+                                                                                                    if (rows55[0].quantity - req.body.itemIDs[i]["quantity"] < 0){
+                                                                                                        var query66 = 'UPDATE SaleItems SET quantity = 0 WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query66, function(err66, rows66, fields66){
+                                                                                                            if (!err66){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err66);  
+                                                                                                        });                                                                                                            
+                                                                                                    
+                                                                                                    }
+                                                                                                    else{
+                                                                                                        var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query5, function(err5, rows3, fields3){
+                                                                                                            if (!err5){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err5);  
+                                                                                                        });                                                                                                     
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        });                                                                                        
+                                                                                    }
+                                                                                    else
+                                                                                        next(err22); 
+                                                                                
+                                                                                }); 
+                                                                            }
+                                                                            else{
+                                                                                var purchasedItem = {shipID: res3.insertId, itemID: req.body.itemIDs[i]["id"], quantity: req.body.itemIDs[i]["quantity"], location: req.body.location};
+                                                                                var query4 = 'INSERT INTO PurchasedItems SET ?'; 
+                                                                                connection.query(query4, purchasedItem, function(err4, res4){
+                                                                                    if (!err4){
+                                                                                        var query55 = 'SELECT * FROM SaleItems WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                        connection.query(query55, function(err55, rows55, fields55){
+                                                                                            if (!err55){
+                                                                                                if (rows55.length > 0){
+                                                                                                    if (rows55[0].quantity - req.body.itemIDs[i]["quantity"] < 0){
+                                                                                                        var query66 = 'UPDATE SaleItems SET quantity = 0 WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query66, function(err66, rows66, fields66){
+                                                                                                            if (!err66){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err66);  
+                                                                                                        });                                                                                                            
+                                                                                                    
+                                                                                                    }
+                                                                                                    else{
+                                                                                                        var query5 = 'UPDATE SaleItems SET quantity = quantity - ' + req.body.itemIDs[i]["quantity"] + ' WHERE itemID = ' + req.body.itemIDs[i]["id"]; 
+                                                                                                        connection.query(query5, function(err5, rows3, fields3){
+                                                                                                            if (!err5){
+                                                                                                                i++; 
+                                                                                                                next(); 
+                                                                                                            }
+                                                                                                            else
+                                                                                                                next(err5);  
+                                                                                                        });                                                                                                     
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        });                                                                                        
+                                                                                    }
+                                                                                    else
+                                                                                        next(err4); 
+                                                                                });                                                                                 
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                            next(err11); 
+                                                                    }); 
+                                                                },
+                                                                function (err) {
+                                                                    if(err) {
+                                                                        res.json({error: err}); 
+                                                                    }
+                                                                    else{
+                                                                        var i = 0;
+                                                                        var orderBool2 = 0; 
+                                                                        async.whilst(function () {
+                                                                          return i < rows.length;
+                                                                        },
+                                                                        function (next) {
+                                                                            if ((rows[i].quantity - req.body.itemIDs[i]["quantity"]) < 0){
+                                                                                var orderQuantity = Math.abs(rows[i].quantity - req.body.itemIDs[i]["quantity"]);
+                                                                                var query00 = 'SELECT * FROM Orders WHERE UID="' + req.body.UID + '" AND itemID=' + req.body.itemIDs[i]["id"]; 
+                                                                                connection.query(query00, function(err00, rows00, fields00){
+                                                                                    if (!err00){
+                                                                                        if (rows00.length > 0){
+                                                                                            var query10 = 'UPDATE Orders SET quantity = quantity + ' + orderQuantity + ' WHERE UID="' + req.body.UID + '" AND itemID=' + req.body.itemIDs[i]["id"];
+                                                                                            connection.query(query10, function(err10, rows10, fields10){
+                                                                                                if (!err10){
+                                                                                                    i++;
+                                                                                                    orderBool2 = 1; 
+                                                                                                    next(); 
+                                                                                                }
+                                                                                                else
+                                                                                                    next(err10); 
+                                                                                            }); 
+                                                                                        }
+                                                                                        else{
+                                                                                            var query12 = 'INSERT INTO Orders SET ?'; 
+                                                                                            var newOrder = {UID: req.body.UID, itemID: req.body.itemIDs[i]["id"], quantity: orderQuantity};
+                                                                                            connection.query(query12, newOrder, function(err12, res12){
+                                                                                                if (!err12){
+                                                                                                    i++;
+                                                                                                    orderBool2 = 1; 
+                                                                                                    next(); 
+                                                                                                }
+                                                                                                else
+                                                                                                    next(err12); 
+                                                                                            }); 
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                        next(err00); 
+                                                                                }); 
+                                                                            }
+                                                                            else{
+                                                                                i++;
+                                                                                next();
+                                                                            }
+                                                                        },
+                                                                        function (err) {
+                                                                            if(err) 
+                                                                                res.json({error: err}); 
+                                                                            else{
+                                                                                if (orderBool2 == 1)
+                                                                                    res.json({error: "Orders have been placed for out of stock items"}); 
+                                                                                else
+                                                                                    res.json({success: true});                         
+                                                                            }
+                                                                            
+                                                                        });                                                                    
+                                                                    } 
+                                                                });                                                 
+                                                            }
+                                                            else
+                                                                res.json({error: "error when inserting into Shipments"}); 
+                                                        }); 
+                                                    }
+                                                    else
+                                                        res.json({error: "error selecting items from Items table"}); 
+                                                }); 
+
+                                            }
+                                            else
+                                                res.json({error: "credit card info incorrect"}); 
+                                        }
+                                        else
+                                            res.json({error: "credit card does not exist on file"}); 
+                                    }
+                                    else
+                                        res.json({error: "error when querying CreditCards table"}); 
+                                });
+                            }
+                    }
+                    else
+                        res.json({error: "error finding items in SaleItems table"}); 
+                });             
+            }
         }
         else
-            res.json({error: "error finding items in SaleItems table"}); 
+            res.json({error: "error querying Shipments table"}); 
+    }); 
+
+}); 
+router.post('/browsedItem', function(req, res){
+    var query = 'INSERT INTO BrowsingHistory SET ?'; 
+    connection.query(query, req.body, function(err, res1){
+        if (!err){
+            res.json(req.body); 
+        }
+        else
+            res.json({error: "error inserting into BrowsingHistory table"}); 
+    }); 
+}); 
+router.post('/getBrowsed', function(req, res){
+    var query = 'SELECT * FROM BrowsingHistory WHERE UID="' + req.body.UID + '"'; 
+    connection.query(query, function(err, rows, fields){
+        if (!err){
+            res.json(rows); 
+        }
+        else
+            res.json({error: "error querying BrowsingHistory table"}); 
     }); 
 }); 
 router.post('/bid', function(req, res){
