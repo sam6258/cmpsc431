@@ -17,6 +17,7 @@ $(document).ready(function() {
     var biddingOn = null;
     var showAuctionItems = true;
     var showSaleItems = true;
+    var viewingRecommended = null;
 
     var formatter = new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -505,7 +506,13 @@ $(document).ready(function() {
 
         $(".bid-btn").click(function() {
             var parent = $(this).closest(".span3");
-            biddingOn = parent;
+
+            if (viewingRecommended == null) {
+                biddingOn = parent;
+            }
+            else {
+                biddingOn = viewingRecommended;
+            }
             $("#bid-modal-item-name").html(parent.attr('name'));
             $("#bid-modal-img").attr("src", parent.find('img').attr('src'));
             $("#bid-modal-item-description").html(parent.attr('description'));
@@ -520,7 +527,12 @@ $(document).ready(function() {
 
         $(".buy-btn").click(function() {
             var parent = $(this).closest(".span3");
-            buyingItem = parent;
+            if (viewingRecommended == null) {
+                buyingItem = parent;
+            }
+            else {
+                buyingItem = viewingRecommended;
+            }
             $("#buy-modal-item-name").html(parent.attr('name'));
             $("#buy-modal-img").attr("src", parent.find('img').attr('src'));
             $("#buy-modal-item-description").html(parent.attr('description'));
@@ -611,6 +623,9 @@ $(document).ready(function() {
     }
 
     $(".bid-modal-close").click(function() {
+        if (viewingRecommended != null) {
+            biddingOn = viewingRecommended;
+        }
         if ($(this).hasClass("btn-success")) {
             //needs post request
             var amount = parseFloat($("#bid-modal-amount").val());
@@ -644,6 +659,7 @@ $(document).ready(function() {
                             })
                             $("#bid-modal .close").click();
                             biddingOn = null;
+                            viewingRecommended = null;
                         }
                         else {
                             showSnackBar("Your bid was not high enough.");
@@ -680,10 +696,14 @@ $(document).ready(function() {
             });
 
             biddingOn = null;
+            viewingRecommended = null;
         }
     });
 
     $(".buy-modal-close").click(function() {
+        if (viewingRecommended != null) {
+            buyingItem = viewingRecommended;
+        }
         if ($(this).hasClass("btn-success")) {
             var amount = parseFloat($("#buy-modal-amount").val());
             var itemIDs = [];
@@ -723,6 +743,7 @@ $(document).ready(function() {
                         })
                         $("#buy-modal .close").click();
                         buyingItem = null;
+                        viewingRecommended = null;
                     }
                 },
                 error: function(error) {
@@ -755,6 +776,7 @@ $(document).ready(function() {
             });
 
             buyingItem = null;
+            viewingRecommended = null;
         }
     });
 
@@ -1312,7 +1334,7 @@ $(document).ready(function() {
                                     dupItem = true;
                                 }
                             }
-                            if (dupItem == false && uniqueItemCount < 5) {
+                            if (dupItem == false && uniqueItemCount < 4) {
                                 ids.push(data[i].itemID);
                                 uniqueItemCount++;
                             }
@@ -1326,7 +1348,7 @@ $(document).ready(function() {
                                     dupItem = true;
                                 }
                             }
-                            if (dupItem == false && uniqueItemCount < 5) {
+                            if (dupItem == false && uniqueItemCount < 4) {
                                 ids.push(displayedSaleItems[i].itemID);
                                 uniqueItemCount++;
                             }
@@ -1357,7 +1379,7 @@ $(document).ready(function() {
                     }
                 }
                 console.log(dupItem + " " + uniqueItemCount);
-                if (dupItem == false && uniqueItemCount < 5) {
+                if (dupItem == false && uniqueItemCount < 4) {
                     ids.push(displayedSaleItems[i]);
                     uniqueItemCount++;
                 }
@@ -1385,12 +1407,25 @@ $(document).ready(function() {
                 else {
                     var tmpAucItems = data.auctionedItems;
                     var tmpSaleItems = data.saleItems;
-                    var current = 0;
+                    var current = 1;
+                    console.log(ids);
+                    console.log(data);
                     for (var i = 0; i < tmpAucItems.length; i++) {
+                        $("#recommended-item-" + current).attr('item-id', tmpAucItems[i].itemID);
+                        $("#recommended-item-" + current).attr('name', tmpAucItems[i].name);
+                        $("#recommended-item-" + current).attr('price', tmpAucItems[i].price);
+                        $("#recommended-item-" + current).attr('description', tmpAucItems[i].description);
+                        $("#recommended-item-" + current).attr('type', 'bid');
                         $("#recommended-item-" + current).attr('src', tmpAucItems[i].url);
                         current++;
                     }
+                    console.log(tmpSaleItems);
                     for (var i = 0; i < tmpSaleItems.length; i++) {
+                        $("#recommended-item-" + current).attr('item-id', tmpSaleItems[i].itemID);
+                        $("#recommended-item-" + current).attr('name', tmpSaleItems[i].name);
+                        $("#recommended-item-" + current).attr('price', tmpSaleItems[i].price);
+                        $("#recommended-item-" + current).attr('description', tmpSaleItems[i].description);
+                        $("#recommended-item-" + current).attr('type', 'buy');
                         $("#recommended-item-" + current).attr('src', tmpSaleItems[i].url);
                         current++;
                     }
@@ -1402,4 +1437,23 @@ $(document).ready(function() {
             }
         });
     }
+
+    $(".recommended-item-img").click(function() {
+        if ($(this).attr('type') == 'bid') {
+            viewingRecommended = $(this);
+            $("#bid-modal-item-name").html($(this).attr('name'));
+            $("#bid-modal-img").attr('src', $(this).attr('src'));
+            $("#bid-modal-item-description").html($(this).attr('description'));
+            $("#bid-modal-amount").val((parseFloat($(this).attr('price')) + 1).toFixed(2));
+            $("#bid-modal-show").click();
+        }
+        else {
+            viewingRecommended = $(this);
+            $("#buy-modal-item-name").html($(this).attr('name'));
+            $("#buy-modal-img").attr("src", $(this).attr('src'));
+            $("#buy-modal-item-description").html($(this).attr('description'));
+            $("#buy-modal-item-price").html(formatter.format($(this).attr('price')));
+            $("#buy-modal-show").click();
+        }
+    });
 });
