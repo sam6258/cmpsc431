@@ -449,7 +449,7 @@ $(document).ready(function() {
                 var t = stamp.split(/[- T : \.]/);
                 var d = new Date(stamp);
 
-                return (d.getMonth() + 1) + "/" + d.getDay() + "/" + (d.getFullYear() + "").slice(2, 4) + " " + getDateString (d);
+                return (d.getMonth() + 1) + "/" + d.getDate() + "/" + (d.getFullYear() + "").slice(2, 4) + " " + getDateString (d);
             }
             return null;
             function getDateString (date) {
