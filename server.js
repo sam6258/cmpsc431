@@ -395,7 +395,7 @@ router.post('/buy', function(req, res){
                                                                                             connection.query(query12, newOrder, function(err12, res12){
                                                                                                 if (!err12){
                                                                                                     i++;
-                                                                                                    next(); 
+                                                                                                    next();  
                                                                                                 }
                                                                                                 else
                                                                                                     next(err12); 
@@ -406,8 +406,10 @@ router.post('/buy', function(req, res){
                                                                                         next(err00); 
                                                                                 }); 
                                                                             }
-                                                                            else
+                                                                            else{
+                                                                                i++;
                                                                                 next(); 
+                                                                            }
                                                                         },
                                                                         function (err) {
                                                                             if(err) {
@@ -616,8 +618,10 @@ router.post('/buy', function(req, res){
                                                                                         next(err00); 
                                                                                 }); 
                                                                             }
-                                                                            else
-                                                                                next(); 
+                                                                            else{
+                                                                                i++;
+                                                                                next();
+                                                                            }
                                                                         },
                                                                         function (err) {
                                                                             if(err) 
