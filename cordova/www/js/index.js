@@ -26,6 +26,7 @@ $(document).ready(function() {
                 });
     var cards = [];
     var ratingItem = null;
+    var highestBids = [];
 
     $(".vendor-element").hide();
     $("#signout").hide();
@@ -635,44 +636,50 @@ $(document).ready(function() {
                 "bidAmount": amount,
                 "itemID": itemID
             }
-            $.ajax({
-                url: "https://himalaya431.herokuapp.com/app/bid",
-                type: "POST",
-                data: JSON.stringify(postObj),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                },
-                crossDomain: true,
-                success: function(data){
-                    if (data.error) {
-                        $("#bid-modal .close").click();
-
-                        showSnackBar(data.error);
-                    }
-                    else {
-                        if (data.highestBidder == true) {
-                            showSnackBar("You bid $" + $("#bid-modal-amount").val() + " on " + biddingOn.attr('name'));
-                            biddingOn.attr('price', data.newPrice + "");
-                            biddingOn.find(".price-btn").html(formatter.format(data.newPrice));
-                            $("#bid-modal input").each(function() {
-                                $(this).val("");
-                            })
+            if (highestBids.indexOf(itemID) >= 0) {
+                showSnackBar("You already have the highest bid.");
+            }
+            else {
+                $.ajax({
+                    url: "https://himalaya431.herokuapp.com/app/bid",
+                    type: "POST",
+                    data: JSON.stringify(postObj),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                    },
+                    crossDomain: true,
+                    success: function(data){
+                        if (data.error) {
                             $("#bid-modal .close").click();
-                            biddingOn = null;
-                            viewingRecommended = null;
+
+                            showSnackBar(data.error);
                         }
                         else {
-                            showSnackBar("Your bid was not high enough.");
+                            if (data.highestBidder == true) {
+                                showSnackBar("You bid $" + $("#bid-modal-amount").val() + " on " + biddingOn.attr('name'));
+                                biddingOn.attr('price', data.newPrice + "");
+                                biddingOn.find(".price-btn").html(formatter.format(data.newPrice));
+                                $("#bid-modal input").each(function() {
+                                    $(this).val("");
+                                })
+                                $("#bid-modal .close").click();
+                                biddingOn = null;
+                                viewingRecommended = null;
+                                getHighestBids();
+                            }
+                            else {
+                                showSnackBar("Your bid was not high enough.");
+                            }
                         }
+                    },
+                    error: function(error) {
+                        $("#bid-modal .close").click();
+                        showSnackBar("Error bidding on item.");
+                        console.log("ERROR: ");
+                        console.log(error);
                     }
-                },
-                error: function(error) {
-                    $("#bid-modal .close").click();
-                    showSnackBar("Error bidding on item.");
-                    console.log("ERROR: ");
-                    console.log(error);
-                }
-            });
+                });
+            }
         }
         else {
             $.ajax({
@@ -1270,6 +1277,7 @@ $(document).ready(function() {
     function didLogin() {
         recommendItems();
         populateCreditCardSelects();
+        getHighestBids();
         $(".login-buttons").hide();
         $(".after-login").show();
         $(".uid").html(currentUser.UID);
@@ -1459,4 +1467,28 @@ $(document).ready(function() {
             $("#buy-modal-show").click();
         }
     });
+
+    function getHighestBids() {
+        $.ajax({
+            url: "https://himalaya431.herokuapp.com/app/getBids",
+            type: "POST",
+            data: JSON.stringify({"UID": currentUser.UID}),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (data.error) {
+                    console.log(data.error);
+                }
+                else {
+                    highestBids = data;
+                }
+            },
+            error: function(error) {
+                console.log("ERROR: ");
+                console.log(error);
+            }
+        });
+    }
 });
