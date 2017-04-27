@@ -369,6 +369,7 @@ router.post('/buy', function(req, res){
                                                                         res.json({error: err}); 
                                                                     else{
                                                                         var i = 0;
+                                                                        var orderBool = 0; 
                                                                         async.whilst(function () {
                                                                           return i < rows.length;
                                                                         },
@@ -383,6 +384,7 @@ router.post('/buy', function(req, res){
                                                                                             connection.query(query10, function(err10, rows10, fields10){
                                                                                                 if (!err10){
                                                                                                     i++;
+                                                                                                    orderBool = 1; 
                                                                                                     next(); 
                                                                                                 }
                                                                                                 else
@@ -395,6 +397,7 @@ router.post('/buy', function(req, res){
                                                                                             connection.query(query12, newOrder, function(err12, res12){
                                                                                                 if (!err12){
                                                                                                     i++;
+                                                                                                    orderBool = 1; 
                                                                                                     next();  
                                                                                                 }
                                                                                                 else
@@ -415,8 +418,15 @@ router.post('/buy', function(req, res){
                                                                             if(err) {
                                                                                 res.json({error: err}); 
                                                                             }
-                                                                            else
-                                                                                res.json({success: true});
+                                                                            else{
+                                                                                if (orderBool == 1)
+                                                                                    res.json({error: "Orders have been placed for out of stock items"}); 
+                                                                                else{
+                                                                                    console.log(orderBool); 
+                                                                                    res.json({success: true});
+                                                                                }
+                                                                            }
+                                                                                
                                                                         });                                                                    
                                                                     } 
                                                                 });                                                 
@@ -581,6 +591,7 @@ router.post('/buy', function(req, res){
                                                                     }
                                                                     else{
                                                                         var i = 0;
+                                                                        var orderBool2 = 0; 
                                                                         async.whilst(function () {
                                                                           return i < rows.length;
                                                                         },
@@ -595,6 +606,7 @@ router.post('/buy', function(req, res){
                                                                                             connection.query(query10, function(err10, rows10, fields10){
                                                                                                 if (!err10){
                                                                                                     i++;
+                                                                                                    orderBool2 = 1; 
                                                                                                     next(); 
                                                                                                 }
                                                                                                 else
@@ -607,6 +619,7 @@ router.post('/buy', function(req, res){
                                                                                             connection.query(query12, newOrder, function(err12, res12){
                                                                                                 if (!err12){
                                                                                                     i++;
+                                                                                                    orderBool2 = 1; 
                                                                                                     next(); 
                                                                                                 }
                                                                                                 else
@@ -626,8 +639,13 @@ router.post('/buy', function(req, res){
                                                                         function (err) {
                                                                             if(err) 
                                                                                 res.json({error: err}); 
-                                                                            else
-                                                                                res.json({success: true});
+                                                                            else{
+                                                                                if (orderBool2 == 1)
+                                                                                    res.json({error: "Orders have been placed for out of stock items"}); 
+                                                                                else
+                                                                                    res.json({success: true});                         
+                                                                            }
+                                                                            
                                                                         });                                                                    
                                                                     } 
                                                                 });                                                 
