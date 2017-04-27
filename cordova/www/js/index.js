@@ -1342,9 +1342,10 @@ $(document).ready(function() {
                         }
 
                        dupItem = false;
+                       console.log(displayedSaleItems);
                         for (var i = 0; i < displayedSaleItems.length; i++) {
                             for (var j = 0; j < ids.length; j++ ) {
-                                if (ids[j] == displayedSaleItems[i].itemID) {
+                                if (ids[j] == displayedSaleItems[i]) {
                                     dupItem = true;
                                 }
                             }
@@ -1375,7 +1376,7 @@ $(document).ready(function() {
            dupItem = false;
             for (var i = 0; i < displayedSaleItems.length; i++) {
                 for (var j = 0; j < ids.length; j++ ) {
-                    if (ids[j] == displayedSaleItems[i].itemID) {
+                    if (ids[j] == displayedSaleItems[i]) {
                         dupItem = true;
                     }
                 }
@@ -1393,6 +1394,7 @@ $(document).ready(function() {
     }
 
     function populateRecommendedItems(ids) {
+        console.log(ids);
         $.ajax({
             url: "https://himalaya431.herokuapp.com/app/Items",
             type: "POST",
