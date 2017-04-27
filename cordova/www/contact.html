@@ -53,10 +53,9 @@
   <div class="navbar-inner">
     <a class="brand" href="index.html"><b>Himalaya.com</b></a>
 		<div class="form-inline navbar-search">
-		
     </div>
     <ul id="topMenu" class="nav pull-right">
-		<li class=""><a class="show-contact-html">Contact</a></li>
+		<li class=""><a href="contact.html">Contact</a></li>
 		<li class="login-buttons">
 		 	<a href="#login" role="button" data-toggle="modal" style="padding-right:0">
 		 		<span class="btn btn-large btn-success">Login</span>
@@ -232,13 +231,13 @@
 		  <div class="modal-body">
 			<form class="form-horizontal loginFrm">
 			  <div class="control-group">								
-				Please enter a bid for item:<br>
-				<img id="bid-modal-img"></img>
-				<b><span id="bid-modal-item-name"></span></b><br>
+				Please enter a bid for item:<br><br>
+				<img id="bid-modal-img"></img><br><br>
+				<b><span id="bid-modal-item-name"></span></b><br><br>
 				<span id="bid-modal-item-description"></span>
 			  </div>
 			  <div class="control-group">
-			  	Bid Amount: <br>
+			  	<b>Bid Amount: &nbsp;</b>
 				<input autocomplete="off" type="text" id="bid-modal-amount" placeholder="Amount - 5.00">
 			  </div>
 			</form>		
@@ -255,14 +254,15 @@
 			<h3>Buy Item</h3>
 		  </div>
 		  <div class="modal-body">
-			Please confirm purchase for item:<br><br>
-			<img id="buy-modal-img"></img>
-			<b><span id="buy-modal-item-name"></span></b><br><br>
-			<span id="buy-modal-item-description"></span><br><br>
-			<b><span id="buy-modal-item-price"></span></b><br><br>
-			<input autocomplete="off" type="text" id="buy-modal-cv2" placeholder="CV2 - 123">
-			<select id="buy-modal-select" class="credit-card-select">
-			</select> 
+				Please confirm purchase for item:<br><br>
+				<img id="buy-modal-img"></img><br><br>
+				<b><span id="buy-modal-item-name"></span></b><br><br>
+				<span id="buy-modal-item-description"></span><br><br>
+				<b><span id="buy-modal-item-price"></span></b><br><br>
+				<input autocomplete="off" type="text" id="buy-modal-cv2" placeholder="CV2 - 123">
+				<select id="buy-modal-select" class="credit-card-select">
+				<input autocomplete="off" type="text" id="buy-modal-dest" placeholder="Address">
+				</select> 
 		  </div>
 		  <div class="modal-footer">
 			<button id="buy-modal-submit" type="submit" class="btn btn-success buy-modal-close">Confirm Purchase</button>
@@ -319,11 +319,48 @@
 				</div>
 				<input autocomplete="off" type="text" id="mycart-modal-cv2" placeholder="CV2 - 123">
 				<select id="mycart-modal-select" class="credit-card-select">
+				<input autocomplete="off" type="text" id="mycart-modal-dest" placeholder="Address">
 				</select> 
 		  </div>
 		  <div class="modal-footer">
 			<button id="mycart-modal-submit" type="submit" class="btn btn-success mycart-modal-close">Confirm Purchase</button>
 			<button class="btn mycart-modal-close" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		  </div>
+	</div>
+
+	<div id="ratings-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close ratings-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Ratings for <span id="ratings-modal-item-name">Item Name</span></h3>
+		  </div>
+		  <div class="modal-body">
+				<div id="ratings-thumbnails">
+					This item has no ratings.
+				</div>
+				<div class="thumbnail">
+					<div class="left-with-indent">
+						<h5 style="display:inline;">Leave a rating for this item: <input autocomplete="off" type="number" id="ratings-modal-rating" min="0" max="5" value="3">&nbsp;&nbsp;stars<br></h5>
+						<textarea id="ratings-modal-description" placeholder="Leave a comment..." maxlength="249" autocomplete="off"></textarea>
+					</div>
+				</div>
+		  </div>
+		  <div class="modal-footer">
+			<button id="ratings-modal-submit" type="submit" class="btn btn-success ratings-modal-close">Submit Rating</button>
+			<button class="btn ratings-modal-close" data-dismiss="modal" aria-hidden="true">Close</button>
+		  </div>
+	</div>
+	<div id="order-history-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close order-history-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Your Order History</h3>
+		  </div>
+		  <div class="modal-body">
+				<div id="order-history-thumbnails">
+					You have no orders.
+				</div>
+		  </div>
+		  <div class="modal-footer">
+			<button class="btn order-history-modal-close" data-dismiss="modal" aria-hidden="true">Close</button>
 		  </div>
 	</div>
 
@@ -334,7 +371,6 @@
 </div>
 </div>
 </div>
-<!-- Header End====================================================================== -->
 <div id="mainBody">
 	<div class="container">
 	<hr class="soften">
@@ -371,14 +407,11 @@
 		<div class="row">
 			<div class="span3">
 				<h5>ACCOUNT</h5>
-				<a href="login.html">YOUR ACCOUNT</a>
-				<a href="login.html">PERSONAL INFORMATION</a> 
-				<a href="login.html">ADDRESSES</a> 
-				<a href="login.html">ORDER HISTORY</a>
+				<a class="render-orders" href="#order-history-modal" role="button" data-toggle="modal">ORDER HISTORY</a>
 			 </div>
 			<div class="span3">
 				<h5>INFORMATION</h5>
-				<a class="show-contact-html">CONTACT</a>  
+				<a href="contact.html">CONTACT</a>  
 			 </div>
 			 <!--
 			<div class="span3">
