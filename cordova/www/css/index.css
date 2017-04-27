@@ -132,3 +132,8 @@ However, delay the fade out process for 2.5 seconds */
   width: 50px;
   text-align: center;
 }
+
+.recommended-item-img {
+  height: 400px;
+  margin-bottom: 20px;
+}

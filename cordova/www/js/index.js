@@ -352,6 +352,7 @@ $(document).ready(function() {
                         success: function(data){
                             if (!data.error) {
                                 currentlyDisplayedItemsJSON = data;
+                                recommendItems();
                                 resetDisplayItems();
                             }
                         },
@@ -375,7 +376,6 @@ $(document).ready(function() {
         var saleItems = currentlyDisplayedItemsJSON.saleItems;
         var count = 0;
         for (var i = 0; i < auctionItems.length || i < saleItems.length; i++) {
-            console.log(i);
             if (count % 3 == 0) {
                 var newRow = '<div class="row"></div>';
                 $("#sale-items").append(newRow);
@@ -383,8 +383,6 @@ $(document).ready(function() {
             var appendTo = $("#sale-items .row").last();
             if (i >= auctionItems.length && showSaleItems) {
                 appendTo.append(getSaleItemHTML(saleItems[i]));
-                                    console.log("376")
-
                 count++;
             }
             else if (i >= saleItems.length && showAuctionItems) {
@@ -402,9 +400,6 @@ $(document).ready(function() {
                 }
                 if (showSaleItems && saleItems[i] != null) {
                     appendTo = $("#sale-items .row").last();
-                    if (saleItems[i] == null) {
-                        console.log("here");
-                    }
                     appendTo.append(getSaleItemHTML(saleItems[i]));
                     count++;
                 }
@@ -571,7 +566,6 @@ $(document).ready(function() {
             $(".cart-cost").each(function() {
                 $(this).html(formatter.format(sum));
             });
-            console.log(shoppingCart);
             showSnackBar("Item has been added to your cart.");
         });
 
@@ -588,9 +582,6 @@ $(document).ready(function() {
                 crossDomain: true,
                 success: function(data){
                     if (!data.error) {
-                        console.log(data);
-
-
                         $("#ratings-thumbnails").html("");
                         if(data.length == 0) {
                             $("#ratings-thumbnails").html("This item has no ratings.");
@@ -668,6 +659,26 @@ $(document).ready(function() {
             });
         }
         else {
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/browsedItem",
+                type: "POST",
+                data: JSON.stringify({"UID": currentUser.UID, "itemID": parseInt(biddingOn.attr('item-id'))}),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        console.log("Browsing history add error: " + data.error);
+                    }
+                },
+                error: function(error) {
+                    showSnackBar("Error adding browsed item to history.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+
             biddingOn = null;
         }
     });
@@ -723,6 +734,26 @@ $(document).ready(function() {
             });
         }
         else {
+            $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/browsedItem",
+                type: "POST",
+                data: JSON.stringify({"UID": currentUser.UID, "itemID": parseInt(buyingItem.attr('item-id'))}),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        console.log("Browsing history add error: " + data.error);
+                    }
+                },
+                error: function(error) {
+                    showSnackBar("Error adding browsed item to history.");
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+
             buyingItem = null;
         }
     });
@@ -1001,7 +1032,7 @@ $(document).ready(function() {
         var itemsObj = {
             "itemIDs": ids
         };
-        console.log(ids);
+
         $.ajax({
             url: "https://himalaya431.herokuapp.com/app/Items",
             type: "POST",
@@ -1030,9 +1061,6 @@ $(document).ready(function() {
                                 }
                                 $(this).closest(".thumbnail").remove();
                                 populateShoppingCartItems();
-                            }
-                            else {
-                                console.log("Do nothing");
                             }
                         }
                     });
@@ -1129,7 +1157,6 @@ $(document).ready(function() {
                 "cv2": cv2,
                 "destination": dest
             }
-
             $.ajax({
                 url: "https://himalaya431.herokuapp.com/app/buy",
                 type: "POST",
@@ -1160,7 +1187,6 @@ $(document).ready(function() {
                     console.log(error);
                 }
             });
-        console.log(ids);
     });
 
     $("#ratings-modal-submit").click(function() {
@@ -1220,11 +1246,11 @@ $(document).ready(function() {
     });
 
     function didLogin() {
+        recommendItems();
         populateCreditCardSelects();
         $(".login-buttons").hide();
         $(".after-login").show();
         $(".uid").html(currentUser.UID);
-        console.log(currentUser.vendor);
         if (currentUser.vendor == true) {
             console.log("showing");
             $(".vendor-element").show();
@@ -1258,6 +1284,122 @@ $(document).ready(function() {
         }   
         $(".cart-cost").each(function() {
             $(this).html(formatter.format(sum));
+        });
+    }
+
+    function recommendItems() {
+        if (currentUser != null) {
+         $.ajax({
+                url: "https://himalaya431.herokuapp.com/app/getBrowsed",
+                type: "POST",
+                data: JSON.stringify({"UID": currentUser.UID}),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                },
+                crossDomain: true,
+                success: function(data){
+                    if (data.error) {
+                        console.log(data.error);
+                    }
+                    else {
+                        console.log(data);
+                        var uniqueItemCount = 0;
+                        var ids = [];
+                        var dupItem = false;
+                        for (var i = data.length - 1; i >= 0; i--) {
+                            for (var j = 0; j < ids.length; j++ ) {
+                                if (ids[j] == data[i].itemID) {
+                                    dupItem = true;
+                                }
+                            }
+                            if (dupItem == false && uniqueItemCount < 5) {
+                                ids.push(data[i].itemID);
+                                uniqueItemCount++;
+                            }
+                            dupItem = false;
+                        }
+
+                        dupItem = false;
+                        for (var i = 0; i < displayedSaleItems.length; i++) {
+                            for (var j = 0; j < ids.length; j++ ) {
+                                if (ids[j] == displayedSaleItems[i].itemID) {
+                                    dupItem = true;
+                                }
+                            }
+                            if (dupItem == false && uniqueItemCount < 5) {
+                                ids.push(displayedSaleItems[i].itemID);
+                                uniqueItemCount++;
+                            }
+                            dupItem = false;
+                        }
+
+                        populateRecommendedItems(ids);
+                        
+                    }
+                },
+                error: function(error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            });
+        }
+        else {
+            console.log("here");
+            var uniqueItemCount = 0;
+            var ids = [];
+            var dupItem = false;
+
+           dupItem = false;
+            for (var i = 0; i < displayedSaleItems.length; i++) {
+                for (var j = 0; j < ids.length; j++ ) {
+                    if (ids[j] == displayedSaleItems[i].itemID) {
+                        dupItem = true;
+                    }
+                }
+                console.log(dupItem + " " + uniqueItemCount);
+                if (dupItem == false && uniqueItemCount < 5) {
+                    ids.push(displayedSaleItems[i]);
+                    uniqueItemCount++;
+                }
+                dupItem = false;
+            }
+
+            populateRecommendedItems(ids);
+
+        }
+    }
+
+    function populateRecommendedItems(ids) {
+        $.ajax({
+            url: "https://himalaya431.herokuapp.com/app/Items",
+            type: "POST",
+            data: JSON.stringify({"itemIDs": ids}),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (data.error) {
+                    console.log(data.error);
+                }
+                else {
+                    var tmpAucItems = data.auctionedItems;
+                    var tmpSaleItems = data.saleItems;
+                    var current = 0;
+                    for (var i = 0; i < tmpAucItems.length; i++) {
+                        $("#recommended-item-" + current).attr('src', tmpAucItems[i].url);
+                        current++;
+                    }
+                    for (var i = 0; i < tmpSaleItems.length; i++) {
+                        $("#recommended-item-" + current).attr('src', tmpSaleItems[i].url);
+                        current++;
+                    }
+                }
+            },
+            error: function(error) {
+                console.log("ERROR: ");
+                console.log(error);
+            }
         });
     }
 });
