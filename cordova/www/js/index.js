@@ -1154,6 +1154,78 @@ $(document).ready(function() {
         });
     });
 
+    function getBrowsedItemHTML(itemObj) {
+        var  html = '<div class="thumbnail">' +
+                        '<img class="browsing-history-img" src="' + itemObj.url + '"></img><br>' +
+                        '<div class="caption">' +
+                            '<h6>' + itemObj.name + '</h6>' +
+                            '<div class="left-with-indent">' +
+                                '<h6 style="display: inline">Description:<br><br></h6><span style="padding-left: 30px">' + itemObj.description + '<br></span><br>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+        
+        return html;
+    }
+
+    $(".render-browsing").click(function() {
+        $.ajax({
+            url: "https://himalaya431.herokuapp.com/app/getBrowsed",
+            type: "POST",
+            data: JSON.stringify({"UID": currentUser.UID}),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            crossDomain: true,
+            success: function(data){
+                if (!data.error) {
+                    console.log(data);
+                    var tmpIds = [];
+                    for (var i = data.length - 1; i >= 0; i--) {
+                        if (tmpIds.indexOf(data[i].itemID) < 0) {
+                            tmpIds.push(data[i].itemID);
+                        }
+                    }
+
+                    $.ajax({
+                        url: "https://himalaya431.herokuapp.com/app/Items",
+                        type: "POST",
+                        data: JSON.stringify({"itemIDs": tmpIds}),
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('Content-Type', 'application/json');
+                        },
+                        crossDomain: true,
+                        success: function(data){
+                            if (!data.error) {
+                                $("#browsing-history-thumbnails").html("");
+                                for (var i = 0; i < tmpIds.length; i++) {
+                                    for (var j = 0; j < data.auctionedItems.length; j++) {
+                                        if (tmpIds[i] == data.auctionedItems[j].itemID) {
+                                            $("#browsing-history-thumbnails").append(getBrowsedItemHTML(data.auctionedItems[j]));
+                                        }
+                                    }
+                                    for (var j = 0; j < data.saleItems.length; j++) {
+                                        if (tmpIds[i] == data.saleItems[j].itemID) {
+                                            $("#browsing-history-thumbnails").append(getBrowsedItemHTML(data.saleItems[j]));
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        error: function(error) {
+                            console.log("ERROR: ");
+                            console.log(error);
+                        }
+                    });
+                }
+            },
+            error: function(error) {
+                console.log("ERROR: ");
+                console.log(error);
+            }
+        });
+    });
+
     $(".mycart-modal-close").click(function() {
         if ($(this).hasClass("btn-success")) {
             
@@ -1282,7 +1354,6 @@ $(document).ready(function() {
         $(".after-login").show();
         $(".uid").html(currentUser.UID);
         if (currentUser.vendor == true) {
-            console.log("showing");
             $(".vendor-element").show();
         }
         $("#signout").show();
@@ -1332,7 +1403,6 @@ $(document).ready(function() {
                         console.log(data.error);
                     }
                     else {
-                        console.log(data);
                         var uniqueItemCount = 0;
                         var ids = [];
                         var dupItem = false;
@@ -1350,14 +1420,12 @@ $(document).ready(function() {
                         }
 
                        dupItem = false;
-                       console.log(displayedSaleItems);
                         for (var i = 0; i < displayedSaleItems.length; i++) {
                             for (var j = 0; j < ids.length; j++ ) {
                                 if (ids[j] == displayedSaleItems[i]) {
                                     dupItem = true;
                                 }
                             }
-                            console.log(dupItem + " " + uniqueItemCount);
                             if (dupItem == false && uniqueItemCount < 4) {
                                 ids.push(displayedSaleItems[i]);
                                 uniqueItemCount++;
@@ -1376,7 +1444,6 @@ $(document).ready(function() {
             });
         }
         else {
-            console.log("here");
             var uniqueItemCount = 0;
             var ids = [];
             var dupItem = false;
@@ -1388,7 +1455,6 @@ $(document).ready(function() {
                         dupItem = true;
                     }
                 }
-                console.log(dupItem + " " + uniqueItemCount);
                 if (dupItem == false && uniqueItemCount < 4) {
                     ids.push(displayedSaleItems[i]);
                     uniqueItemCount++;
@@ -1402,7 +1468,6 @@ $(document).ready(function() {
     }
 
     function populateRecommendedItems(ids) {
-        console.log(ids);
         $.ajax({
             url: "https://himalaya431.herokuapp.com/app/Items",
             type: "POST",
@@ -1419,8 +1484,6 @@ $(document).ready(function() {
                     var tmpAucItems = data.auctionedItems;
                     var tmpSaleItems = data.saleItems;
                     var current = 1;
-                    console.log(ids);
-                    console.log(data);
                     for (var i = 0; i < tmpAucItems.length; i++) {
                         $("#recommended-item-" + current).attr('item-id', tmpAucItems[i].itemID);
                         $("#recommended-item-" + current).attr('name', tmpAucItems[i].name);
@@ -1430,7 +1493,6 @@ $(document).ready(function() {
                         $("#recommended-item-" + current).attr('src', tmpAucItems[i].url);
                         current++;
                     }
-                    console.log(tmpSaleItems);
                     for (var i = 0; i < tmpSaleItems.length; i++) {
                         $("#recommended-item-" + current).attr('item-id', tmpSaleItems[i].itemID);
                         $("#recommended-item-" + current).attr('name', tmpSaleItems[i].name);

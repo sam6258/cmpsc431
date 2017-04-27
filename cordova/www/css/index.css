@@ -110,7 +110,7 @@ However, delay the fade out process for 2.5 seconds */
   padding-bottom: .1em !important;
 }
 
-.mycart-img, #bid-modal-img, #buy-modal-img {
+.mycart-img, .browsing-history-img, #bid-modal-img, #buy-modal-img {
   max-height: 200px;
 }
 

@@ -373,6 +373,20 @@
 			<button class="btn order-history-modal-close" data-dismiss="modal" aria-hidden="true">Close</button>
 		  </div>
 	</div>
+	<div id="browsing-history-modal" class="modal hide fade in center" tabindex="-1" role="dialog" aria-hidden="false" >
+		  <div class="modal-header">
+			<button type="button" class="close browsing-history-modal-close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>Your Browsing History</h3>
+		  </div>
+		  <div class="modal-body">
+				<div id="browsing-history-thumbnails">
+					You have no history.
+				</div>
+		  </div>
+		  <div class="modal-footer">
+			<button class="btn browsing-history-modal-close" data-dismiss="modal" aria-hidden="true">Close</button>
+		  </div>
+	</div>
 
 		<div id="snackbar">Item has been added to your cart.</div>
 	</li>
@@ -539,6 +553,7 @@
 			<div class="span3">
 				<h5>ACCOUNT</h5>
 				<a class="render-orders" href="#order-history-modal" role="button" data-toggle="modal">ORDER HISTORY</a>
+				<a class="render-browsing" href="#browsing-history-modal" role="button" data-toggle="modal">BROWSING HISTORY</a>
 			 </div>
 			<div class="span3">
 				<h5>INFORMATION</h5>
