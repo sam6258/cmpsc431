@@ -1341,15 +1341,16 @@ $(document).ready(function() {
                             dupItem = false;
                         }
 
-                        dupItem = false;
+                       dupItem = false;
                         for (var i = 0; i < displayedSaleItems.length; i++) {
                             for (var j = 0; j < ids.length; j++ ) {
                                 if (ids[j] == displayedSaleItems[i].itemID) {
                                     dupItem = true;
                                 }
                             }
+                            console.log(dupItem + " " + uniqueItemCount);
                             if (dupItem == false && uniqueItemCount < 4) {
-                                ids.push(displayedSaleItems[i].itemID);
+                                ids.push(displayedSaleItems[i]);
                                 uniqueItemCount++;
                             }
                             dupItem = false;
